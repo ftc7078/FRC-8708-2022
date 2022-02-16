@@ -14,6 +14,9 @@ package frc.robot;
 
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
+import edu.wpi.first.networktables.NetworkTableEntry;
+
+import java.util.ArrayList;
 
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -25,10 +28,16 @@ import edu.wpi.first.cscore.CvSink;
 import edu.wpi.first.cscore.CvSource;
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.hal.HAL;
+import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.subsystems.Encoders;
+import edu.wpi.first.wpilibj.motorcontrol.MotorController;
+import edu.wpi.first.wpilibj.motorcontrol.PWMMotorController;
+import edu.wpi.first.wpilibj.motorcontrol.Spark;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
+
+
 import frc.robot.vision.MyVisionThread;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -41,11 +50,22 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class Robot extends TimedRobot {
 
-    private Command m_autonomousCommand;
 
-    private RobotContainer m_robotContainer;
-
+    private Encoder encoder_left;
+    private Encoder encoder_right;
     private Thread m_visionThread;
+    private NetworkTableEntry m_maxSpeed;
+    private PWMSparkMax sparkMax;
+    //private ArrayList <PWMSparkMax> pwms = new ArrayList<PWMSparkMax>();
+    private Joystick joystick;
+    long lastTime = System.nanoTime();
+    long thisTime = System.nanoTime();
+    int thisCount = 0;
+    int lastCount = 0;
+    int maxRPM = 0;
+    int minRPM = 0;
+
+
 
     /**
      * This function is run when the robot is first started up and should be
@@ -56,13 +76,34 @@ public class Robot extends TimedRobot {
         // Instantiate our RobotContainer. This will perform all our button bindings,
         // and put our
         // autonomous chooser on the dashboard.
-        m_robotContainer = RobotContainer.getInstance();
         HAL.report(tResourceType.kResourceType_Framework, tInstances.kFramework_RobotBuilder);
         m_visionThread = new MyVisionThread();
         m_visionThread.setDaemon(true);
         m_visionThread.start();
+        encoder_left = new Encoder(0,1);
+        encoder_right = new Encoder(2,3);
+        lastCount = encoder_left.get();
+        thisCount = lastCount;
+        sparkMax = new PWMSparkMax(0);
+
+      
+        sparkMax.set(0);
+        /*pwms.add(0,null);
+        for (int i=1;i<10;i++) {
+            pwms.add(i,new PWMSparkMax(i));
+            pwms.get(i).set(0);
+        }*/
+        joystick = new Joystick(0);
+        
+        Shuffleboard.getTab("Configuration")
+            .add("Max Speed", 0.1)
+             .withWidget("Number Slider")
+            .withPosition(1, 1)
+            .withSize(2, 1)
+            .getEntry();
     }
 
+    
     /**
      * This function is called every robot packet, no matter the mode. Use this for
      * items like
@@ -75,6 +116,7 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void robotPeriodic() {
+        
         // Runs the Scheduler. This is responsible for polling buttons, adding
         // newly-scheduled
         // commands, running already-scheduled commands, removing finished or
@@ -82,9 +124,27 @@ public class Robot extends TimedRobot {
         // and running subsystem periodic() methods. This must be called from the
         // robot's periodic
         // block in order for anything in the Command-based framework to work.
-        CommandScheduler.getInstance().run();
-        SmartDashboard.putNumber("left", m_robotContainer.m_encoders.getLeft());
-        SmartDashboard.putNumber("right", m_robotContainer.m_encoders.getRight());
+        lastTime = thisTime;
+        thisTime = System.nanoTime();
+        long nanoseconds = thisTime - lastTime;
+
+        lastCount = thisCount;
+        thisCount =  encoder_left.get();
+        long countDifference = thisCount - lastCount;
+
+        int rpm =(int) ( (double) countDifference * 60000000000.0 / (double) nanoseconds / 2048);
+        if (rpm > maxRPM ) { maxRPM = rpm;} 
+        if (rpm < minRPM ) { minRPM = rpm;} 
+        
+        
+        SmartDashboard.putNumber("speedz",sparkMax.get());
+        SmartDashboard.putNumber("rpm", rpm);
+        SmartDashboard.putNumber("max rpm", maxRPM);
+        SmartDashboard.putNumber("min rpm", minRPM);
+
+        SmartDashboard.putNumber("left",encoder_left.get());
+        SmartDashboard.putNumber("right", encoder_right.get());
+        SmartDashboard.putNumber("left x", joystick.getX());
         SmartDashboard.updateValues();
     }
 
@@ -105,12 +165,7 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void autonomousInit() {
-        m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-
-        // schedule the autonomous command (example)
-        if (m_autonomousCommand != null) {
-            m_autonomousCommand.schedule();
-        }
+ 
     }
 
     /**
@@ -126,9 +181,7 @@ public class Robot extends TimedRobot {
         // teleop starts running. If you want the autonomous to
         // continue until interrupted by another command, remove
         // this line or comment it out.
-        if (m_autonomousCommand != null) {
-            m_autonomousCommand.cancel();
-        }
+
     }
 
     /**
@@ -136,12 +189,14 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void teleopPeriodic() {
+
+        sparkMax.set(joystick.getX());
+
     }
 
     @Override
     public void testInit() {
         // Cancels all running commands at the start of test mode.
-        CommandScheduler.getInstance().cancelAll();
     }
 
     /**
