@@ -34,8 +34,15 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.motorcontrol.PWMMotorController;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
+
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxAlternateEncoder;
+import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
 
 
 import frc.robot.vision.MyVisionThread;
@@ -55,7 +62,7 @@ public class Robot extends TimedRobot {
     private Encoder encoder_right;
     private Thread m_visionThread;
     private NetworkTableEntry m_maxSpeed;
-    private PWMSparkMax sparkMax;
+    private CANSparkMax sparkMax;
     //private ArrayList <PWMSparkMax> pwms = new ArrayList<PWMSparkMax>();
     private Joystick joystick;
     long lastTime = System.nanoTime();
@@ -84,7 +91,7 @@ public class Robot extends TimedRobot {
         encoder_right = new Encoder(2,3);
         lastCount = encoder_left.get();
         thisCount = lastCount;
-        sparkMax = new PWMSparkMax(0);
+        sparkMax = new CANSparkMax(1, MotorType.kBrushless);
 
       
         sparkMax.set(0);
