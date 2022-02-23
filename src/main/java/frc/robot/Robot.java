@@ -14,7 +14,9 @@ package frc.robot;
 
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
+import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 
 import java.util.ArrayList;
 
@@ -28,9 +30,16 @@ import edu.wpi.first.cscore.CvSink;
 import edu.wpi.first.cscore.CvSource;
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.hal.HAL;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.PneumaticHub;
+import edu.wpi.first.wpilibj.PneumaticsBase;
+import edu.wpi.first.wpilibj.PneumaticsControlModule;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.motorcontrol.PWMMotorController;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
@@ -40,6 +49,7 @@ import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxAlternateEncoder;
 import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.AlternateEncoderType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
@@ -71,6 +81,11 @@ public class Robot extends TimedRobot {
     int lastCount = 0;
     int maxRPM = 0;
     int minRPM = 0;
+    double motorSpeed  = 0;
+    private PneumaticsControlModule pnu;
+    private DoubleSolenoid arm;
+
+
 
 
 
@@ -84,17 +99,22 @@ public class Robot extends TimedRobot {
         // and put our
         // autonomous chooser on the dashboard.
         HAL.report(tResourceType.kResourceType_Framework, tInstances.kFramework_RobotBuilder);
-        m_visionThread = new MyVisionThread();
-        m_visionThread.setDaemon(true);
-        m_visionThread.start();
+        //m_visionThread = new MyVisionThread();
+        //m_visionThread.setDaemon(true);
+        //m_visionThread.start();
         encoder_left = new Encoder(0,1);
         encoder_right = new Encoder(2,3);
         lastCount = encoder_left.get();
         thisCount = lastCount;
         sparkMax = new CANSparkMax(1, MotorType.kBrushless);
+        pnu = new PneumaticsControlModule();
 
-      
+        
+        arm = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 0, 1);
+
+        
         sparkMax.set(0);
+        sparkMax.setOpenLoopRampRate(2);
         /*pwms.add(0,null);
         for (int i=1;i<10;i++) {
             pwms.add(i,new PWMSparkMax(i));
@@ -142,16 +162,32 @@ public class Robot extends TimedRobot {
         int rpm =(int) ( (double) countDifference * 60000000000.0 / (double) nanoseconds / 2048);
         if (rpm > maxRPM ) { maxRPM = rpm;} 
         if (rpm < minRPM ) { minRPM = rpm;} 
-        
-        
+        NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
+        NetworkTableEntry tx = table.getEntry("tx");
+        NetworkTableEntry ty = table.getEntry("ty");
+        NetworkTableEntry ta = table.getEntry("ta");
+
+        RelativeEncoder enc = sparkMax.getAlternateEncoder(2048);
+        enc.getPosition();
+        SmartDashboard.putNumber("sparkEncoder",enc.getPosition()) ;
         SmartDashboard.putNumber("speedz",sparkMax.get());
         SmartDashboard.putNumber("rpm", rpm);
         SmartDashboard.putNumber("max rpm", maxRPM);
         SmartDashboard.putNumber("min rpm", minRPM);
+        SmartDashboard.putNumber("tx", tx.getDouble(0));
+        SmartDashboard.putNumber("Distance", 3/Math.sqrt(ta.getDouble(0)) );
+
+        SmartDashboard.putNumber("ty", ty.getDouble(0));
+        SmartDashboard.putNumber("tz", ta.getDouble(0));
 
         SmartDashboard.putNumber("left",encoder_left.get());
         SmartDashboard.putNumber("right", encoder_right.get());
         SmartDashboard.putNumber("left x", joystick.getX());
+        SmartDashboard.putNumber("motorSpeed", motorSpeed);
+        SmartDashboard.putNumber("pov", joystick.getPOV());
+        SmartDashboard.putNumber("compressor current", pnu.getCompressorCurrent());
+        SmartDashboard.putNumber("compressor voltage", pnu.getAnalogVoltage(1));
+
         SmartDashboard.updateValues();
     }
 
@@ -160,6 +196,8 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void disabledInit() {
+        //pnu.disableCompressor();
+
     }
 
     @Override
@@ -188,7 +226,7 @@ public class Robot extends TimedRobot {
         // teleop starts running. If you want the autonomous to
         // continue until interrupted by another command, remove
         // this line or comment it out.
-
+       // pnu.enableCompressorDigital();
     }
 
     /**
@@ -197,7 +235,31 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopPeriodic() {
 
-        sparkMax.set(joystick.getX());
+        if (joystick.getRawButtonPressed(2) ) {
+            motorSpeed = motorSpeed+0.02;
+        } else if (joystick.getRawButtonPressed(1)) {
+            motorSpeed = motorSpeed -0.02;
+        } else if (joystick.getRawButtonPressed(4)) {
+            motorSpeed = motorSpeed+0.2;
+        } else if (joystick.getRawButtonPressed(3)) {
+            motorSpeed = motorSpeed-0.2;
+        } else if (joystick.getPOV() > -1)  {
+            motorSpeed = 0;
+        }
+
+        if (motorSpeed > 1) {
+            motorSpeed = 1;
+        } else if (motorSpeed < -1) {
+            motorSpeed = -1;
+        }
+        if (joystick.getRawButton(6)) {
+            SmartDashboard.putNumber("Buttong 5" , 0);
+            arm.set(Value.kForward);
+        } else {
+            arm.set(Value.kReverse);
+            SmartDashboard.putNumber("Buttong 5" , 1);
+        }
+        sparkMax.set(motorSpeed);
 
     }
 
