@@ -14,6 +14,7 @@ package frc.robot;
 
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.networktables.NetworkTableEntry;
 
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ import edu.wpi.first.hal.HAL;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.motorcontrol.PWMMotorController;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
@@ -40,7 +42,9 @@ import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxAlternateEncoder;
 import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.SparkMaxRelativeEncoder;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.EncoderType;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 
@@ -63,6 +67,7 @@ public class Robot extends TimedRobot {
     private Thread m_visionThread;
     private NetworkTableEntry m_maxSpeed;
     private CANSparkMax sparkMax;
+
     //private ArrayList <PWMSparkMax> pwms = new ArrayList<PWMSparkMax>();
     private Joystick joystick;
     long lastTime = System.nanoTime();
@@ -84,16 +89,20 @@ public class Robot extends TimedRobot {
         // and put our
         // autonomous chooser on the dashboard.
         HAL.report(tResourceType.kResourceType_Framework, tInstances.kFramework_RobotBuilder);
+        /*
         m_visionThread = new MyVisionThread();
         m_visionThread.setDaemon(true);
         m_visionThread.start();
+        */
         encoder_left = new Encoder(0,1);
         encoder_right = new Encoder(2,3);
         lastCount = encoder_left.get();
         thisCount = lastCount;
         sparkMax = new CANSparkMax(1, MotorType.kBrushless);
+        sparkMax.getEncoder().getVelocity();
 
-      
+   
+
         sparkMax.set(0);
         /*pwms.add(0,null);
         for (int i=1;i<10;i++) {
@@ -123,6 +132,7 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void robotPeriodic() {
+
         
         // Runs the Scheduler. This is responsible for polling buttons, adding
         // newly-scheduled
@@ -152,6 +162,10 @@ public class Robot extends TimedRobot {
         SmartDashboard.putNumber("left",encoder_left.get());
         SmartDashboard.putNumber("right", encoder_right.get());
         SmartDashboard.putNumber("left x", joystick.getX());
+        SmartDashboard.putNumber("maxEncder", sparkMax.getEncoder().getPosition());
+        SmartDashboard.putNumber("maxR", sparkMax.getAlternateEncoder(8128).getPosition());
+        
+
         SmartDashboard.updateValues();
     }
 
