@@ -51,6 +51,7 @@ import com.revrobotics.SparkMaxAlternateEncoder;
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.AlternateEncoderType;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.SparkMaxRelativeEncoder;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 
@@ -73,17 +74,20 @@ public class Robot extends TimedRobot {
     private Thread m_visionThread;
     private NetworkTableEntry m_maxSpeed;
     private CANSparkMax sparkMax;
+    private CANSparkMax sparkMaxToo;
     //private ArrayList <PWMSparkMax> pwms = new ArrayList<PWMSparkMax>();
     private Joystick joystick;
     long lastTime = System.nanoTime();
     long thisTime = System.nanoTime();
+    double thisPosition = 0;
+    double lastPosition = 0;
     int thisCount = 0;
     int lastCount = 0;
     int maxRPM = 0;
     int minRPM = 0;
     double motorSpeed  = 0;
-    private PneumaticsControlModule pnu;
-    private DoubleSolenoid arm;
+    // private PneumaticsControlModule pnu;
+    // private DoubleSolenoid arm;
 
 
 
@@ -107,10 +111,11 @@ public class Robot extends TimedRobot {
         lastCount = encoder_left.get();
         thisCount = lastCount;
         sparkMax = new CANSparkMax(1, MotorType.kBrushless);
-        pnu = new PneumaticsControlModule();
+        sparkMaxToo = new CANSparkMax(2, MotorType.kBrushed);
 
-        
-        arm = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 0, 1);
+
+        //pnu = new PneumaticsControlModule();
+        //arm = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 0, 1);
 
         
         sparkMax.set(0);
@@ -151,27 +156,38 @@ public class Robot extends TimedRobot {
         // and running subsystem periodic() methods. This must be called from the
         // robot's periodic
         // block in order for anything in the Command-based framework to work.
+        RelativeEncoder enc;
+
         lastTime = thisTime;
         thisTime = System.nanoTime();
         long nanoseconds = thisTime - lastTime;
 
-        lastCount = thisCount;
-        thisCount =  encoder_left.get();
-        long countDifference = thisCount - lastCount;
-
-        int rpm =(int) ( (double) countDifference * 60000000000.0 / (double) nanoseconds / 2048);
+        //lastCount = thisCount;
+        //thisCount =  encoder_left.get();
+        //long countDifference = thisCount - lastCount;
+        //int rpm =(int) ( (double) countDifference * 60000000000.0 / (double) nanoseconds );
+        lastPosition = thisPosition;
+        enc = sparkMax.getEncoder();
+        thisPosition =  enc.getPosition();
+        int rpm = (int)  ( ( thisPosition - lastPosition) * 60000000000.0 / (double) nanoseconds);
+        SmartDashboard.putNumber("position", thisPosition);
+        SmartDashboard.putNumber("rpm", rpm);
+        SmartDashboard.putNumber("velocity", enc.getVelocity());
         if (rpm > maxRPM ) { maxRPM = rpm;} 
         if (rpm < minRPM ) { minRPM = rpm;} 
+
+
+        enc = sparkMaxToo.getEncoder(SparkMaxRelativeEncoder.Type.kQuadrature, 8128);
+        SmartDashboard.putNumber("velocity too" , enc.getVelocity());
+
+
         NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
         NetworkTableEntry tx = table.getEntry("tx");
         NetworkTableEntry ty = table.getEntry("ty");
         NetworkTableEntry ta = table.getEntry("ta");
 
-        RelativeEncoder enc = sparkMax.getAlternateEncoder(2048);
-        enc.getPosition();
         SmartDashboard.putNumber("sparkEncoder",enc.getPosition()) ;
         SmartDashboard.putNumber("speedz",sparkMax.get());
-        SmartDashboard.putNumber("rpm", rpm);
         SmartDashboard.putNumber("max rpm", maxRPM);
         SmartDashboard.putNumber("min rpm", minRPM);
         SmartDashboard.putNumber("tx", tx.getDouble(0));
@@ -185,8 +201,8 @@ public class Robot extends TimedRobot {
         SmartDashboard.putNumber("left x", joystick.getX());
         SmartDashboard.putNumber("motorSpeed", motorSpeed);
         SmartDashboard.putNumber("pov", joystick.getPOV());
-        SmartDashboard.putNumber("compressor current", pnu.getCompressorCurrent());
-        SmartDashboard.putNumber("compressor voltage", pnu.getAnalogVoltage(1));
+      //  SmartDashboard.putNumber("compressor current", pnu.getCompressorCurrent());
+      //  SmartDashboard.putNumber("compressor voltage", pnu.getAnalogVoltage(1));
 
         SmartDashboard.updateValues();
     }
@@ -254,12 +270,13 @@ public class Robot extends TimedRobot {
         }
         if (joystick.getRawButton(6)) {
             SmartDashboard.putNumber("Buttong 5" , 0);
-            arm.set(Value.kForward);
+            //arm.set(Value.kForward);
         } else {
-            arm.set(Value.kReverse);
+            //arm.set(Value.kReverse);
             SmartDashboard.putNumber("Buttong 5" , 1);
         }
         sparkMax.set(motorSpeed);
+        sparkMaxToo.set(motorSpeed);
 
     }
 
