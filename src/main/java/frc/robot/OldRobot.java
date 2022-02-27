@@ -45,7 +45,7 @@ import edu.wpi.first.wpilibj.motorcontrol.PWMMotorController;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
 
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
+import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxAlternateEncoder;
 import com.revrobotics.SparkMaxPIDController;
@@ -75,7 +75,7 @@ public class OldRobot extends TimedRobot {
     private NetworkTableEntry m_maxSpeed;
     private CANSparkMax sparkMax;
     private CANSparkMax sparkMaxToo;
-    //private ArrayList <PWMSparkMax> pwms = new ArrayList<PWMSparkMax>();
+    //private ArrayList <Spark> pwms = new ArrayList<Spark>();
     private Joystick joystick;
     long lastTime = System.nanoTime();
     long thisTime = System.nanoTime();
@@ -122,7 +122,7 @@ public class OldRobot extends TimedRobot {
         sparkMax.setOpenLoopRampRate(2);
         /*pwms.add(0,null);
         for (int i=1;i<10;i++) {
-            pwms.add(i,new PWMSparkMax(i));
+            pwms.add(i,new Spark(i));
             pwms.get(i).set(0);
         }*/
         joystick = new Joystick(0);

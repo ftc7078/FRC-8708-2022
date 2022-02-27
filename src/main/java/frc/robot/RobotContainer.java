@@ -6,6 +6,7 @@ package frc.robot;
 
 import static edu.wpi.first.wpilibj.XboxController.Button;
 
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.OIConstants;
@@ -28,9 +29,10 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
  */
 public class RobotContainer {
   // The robot's subsystems
-  //final DriveSubsystem m_robotDrive = new DriveSubsystem();
-  final ShooterSimple m_shooter = new ShooterSimple();
+  final DriveSubsystem m_robotDrive = new DriveSubsystem();
+  //final ShooterSimple m_shooter = new ShooterSimple();
 
+/*
   // A simple autonomous routine that shoots the loaded frisbees
   private final Command m_autoCommand =
       // Start the command by spinning up the shooter...
@@ -51,9 +53,12 @@ public class RobotContainer {
                 m_shooter.disable();
                 m_shooter.stopFeeder();
               });
-
+*/
   // The driver's controller
   XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
+  Joystick m_driverControllerJoystickLeft = new Joystick(OIConstants.kDriverControllerPort1);
+  Joystick m_driverControllerJoystickRight = new Joystick(OIConstants.kDriverControllerPort2);
+  
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -62,22 +67,23 @@ public class RobotContainer {
 
     // Configure default commands
     // Set the default drive command to split-stick arcade drive
-    /*
+    
     m_robotDrive.setDefaultCommand(
         // A split-stick arcade command, with forward/backward controlled by the left
         // hand, and turning controlled by the right.
         new RunCommand(
             () ->
-                m_robotDrive.arcadeDrive(
-                    -m_driverController.getLeftY(), m_driverController.getRightX()),
-            m_robotDrive));
-            */
-    
+            m_robotDrive.tankDrive(
+                m_driverControllerJoystickLeft.getY(), m_driverControllerJoystickRight.getY(),
+                m_driverControllerJoystickRight.getTrigger(), m_driverControllerJoystickRight.getRawButton(2)),
+                m_robotDrive));
+    /*
     m_shooter.setDefaultCommand( 
         new RunCommand( 
             ()->m_shooter.setShooter(m_driverController.getRightTriggerAxis()), 
             m_shooter
         ));
+        */
         
 
   }
@@ -89,6 +95,7 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
+/*
     // Spin up the shooter when the 'A' button is pressed
     new JoystickButton(m_driverController, Button.kA.value)
         .whenPressed(new InstantCommand(m_shooter::enable, m_shooter));
@@ -109,13 +116,15 @@ public class RobotContainer {
                 // desired speed
                 m_shooter::atSetpoint))
         .whenReleased(new InstantCommand(m_shooter::stopFeeder, m_shooter));
+*/
 
     // Drive at half speed when the bumper is held
-    /*
     new JoystickButton(m_driverController, Button.kRightBumper.value)
         .whenPressed(() -> m_robotDrive.setMaxOutput(0.5))
         .whenReleased(() -> m_robotDrive.setMaxOutput(1));
-        */
+
+        
+    
   }
 
   /**
@@ -123,7 +132,7 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
-  public Command getAutonomousCommand() {
-    return m_autoCommand;
-  }
+  //public Command getAutonomousCommand() {
+  //  return m_autoCommand;
+  //}
 }
