@@ -4,15 +4,15 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import frc.robot.Constants.DriveConstants;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.DriveConstants;
 
-public class DriveSubsystem extends SubsystemBase {
+public class DriveSubsystemOld extends SubsystemBase {
   // The motors on the left side of the drive.
   private final MotorControllerGroup m_leftMotors =
       new MotorControllerGroup(
@@ -22,9 +22,9 @@ public class DriveSubsystem extends SubsystemBase {
   // The motors on the right side of the drive.
   private final MotorControllerGroup m_rightMotors =
       new MotorControllerGroup(
-          new Spark(DriveConstants.kRightMotor1Port),
-          new Spark(DriveConstants.kRightMotor2Port));
-
+        new Spark(DriveConstants.kRightMotor1Port),
+        new Spark(DriveConstants.kRightMotor2Port));
+  
   // The robot's drive
   private final DifferentialDrive m_drive = new DifferentialDrive(m_leftMotors, m_rightMotors);
 
@@ -32,11 +32,12 @@ public class DriveSubsystem extends SubsystemBase {
 
 
   /** Creates a new DriveSubsystem. */
-  public DriveSubsystem() {
+  public DriveSubsystemOld() {
     // We need to invert one side of the drivetrain so that positive voltages
     // result in both sides moving forward. Depending on how your robot's
     // gearbox is constructed, you might have to invert the left side instead.
     m_leftMotors.setInverted(true);
+    
 
   }
 
@@ -72,5 +73,16 @@ public class DriveSubsystem extends SubsystemBase {
    */
   public void setMaxOutput(double maxOutput) {
     m_drive.setMaxOutput(maxOutput);
+  }
+
+  public void setDriveStates(State leftState, State rightState) {
+    double leftSpeed = leftState.velocity/5700;
+    double rightSpeed = rightState.velocity/5700;
+    m_leftMotors.set(leftSpeed);
+    m_rightMotors.set(rightSpeed);
+  }
+
+  public void resetEncoders() {
+    //I don't have any
   }
 }
