@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
+import frc.robot.subsystems.DriveSubsystemMax;
 import frc.robot.subsystems.DriveSubsystemOld;
 
 /**
@@ -36,7 +37,7 @@ import frc.robot.subsystems.DriveSubsystemOld;
  */
 public class RobotContainer {
   // The robot's subsystems
-  final DriveSubsystemOld m_robotDrive = new DriveSubsystemOld();
+  final DriveSubsystemMax m_robotDrive = new DriveSubsystemMax();
   //final ShooterSimple m_shooter = new ShooterSimple();
 
 /*
@@ -127,11 +128,7 @@ public class RobotContainer {
         .whenReleased(new InstantCommand(m_shooter::stopFeeder, m_shooter));
 */
 
-    // Drive at half speed when the bumper is held
-    new JoystickButton(m_driverController, Button.kRightBumper.value)
-        .whenPressed(() -> m_robotDrive.setMaxOutput(0.5))
-        .whenReleased(() -> m_robotDrive.setMaxOutput(1));
-
+    
         
     
   }

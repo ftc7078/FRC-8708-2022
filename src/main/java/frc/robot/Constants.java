@@ -26,11 +26,8 @@ public final class Constants {
     public static final boolean krightEncoderReversed = false;
     public static final boolean kRightEncoderReversed = true;
     
-    public static final int kEncoderCPR = 1024;
     public static final double kWheelDiameterInches = 6;
-    public static final double kEncoderDistancePerPulse =
-    // Assumes the encoders are directly mounted on the wheel shafts
-    (kWheelDiameterInches * Math.PI) / (double) kEncoderCPR;
+    public static final double kEncoderDistancePerRevolution = (kWheelDiameterInches * Math.PI);
     public static final double kMaxAccelerationMetersPerSecondSquared = 3;
     public static final double kMaxSpeedMetersPerSecond = 3;
     public static final double kTrackwidthMeters = 0.69;
@@ -41,16 +38,12 @@ public final class Constants {
     public static final double kaVoltSecondsSquaredPerMeter = 0;
     public static final double kvVoltSecondsPerMeter = 0;
     public static double ksVolts = 0.05;
+    public static double kPDriveVel = 3;
   }
   
   public static final class ShooterConstants {
     public static final double kSVolts = 0.05;
-    public static final int[] kEncoderPorts = new int[] {4, 5};
     public static final boolean kEncoderReversed = false;
-    public static final int kEncoderCPR = 1024;
-    public static final double kEncoderDistancePerPulse =
-    // Distance units will be rotations
-    1.0 / (double) kEncoderCPR;
     
     public static final int kShooterMotorPort = 1;
     public static final int kFeederMotorPort = 2;
