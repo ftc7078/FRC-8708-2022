@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.interfaces.Gyro;
-import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
@@ -36,7 +35,7 @@ public class DriveSubsystemMax extends SubsystemBase {
   RelativeEncoder m_leftEncoder = m_leftMotor1.getEncoder(Type.kQuadrature, 8128);
   RelativeEncoder m_rightEncoder = m_rightMotor1.getEncoder(Type.kQuadrature, 8128);
   SparkMaxPIDController m_rightPID = m_rightMotor1.getPIDController();
-  SparkMaxPIDController m_leftPID = m_leftMotor1.getPIDController();
+  public SparkMaxPIDController m_leftPID = m_leftMotor1.getPIDController();
   
 
   /*  Trying using follow mode, so we just control one motor and the other does the same thing.
@@ -64,7 +63,7 @@ public class DriveSubsystemMax extends SubsystemBase {
     m_leftMotor1.setInverted(true);
     m_leftMotor2.setInverted(true);
     m_rightMotor2.follow(m_rightMotor1);
-    m_leftMotor2.follow(m_leftMotor2);
+    m_leftMotor2.follow(m_leftMotor1);
 
 
     // Sets the distance per pulse for the encoders

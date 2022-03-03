@@ -15,15 +15,17 @@ import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 * constants are needed, to reduce verbosity.
 */
 public final class Constants {
-  public static final class DriveConstants {
-    public static final int kLeftMotor1Port = 0;
-    public static final int kLeftMotor2Port = 2;
-    public static final int kRightMotor1Port = 1;
-    public static final int kRightMotor2Port = 3;
-    
+  public static final int kTransferMotor1 = 6;
+  public static final int kTransferMotor2 = 7;
+  public static final int kPickupMotor = 5;
 
-    public static final boolean krightEncoderReversed = false;
-    public static final boolean kRightEncoderReversed = true;
+  public static final class DriveConstants {
+    public static final int kLeftMotor1Port = 1;
+    public static final int kLeftMotor2Port = 2;
+    public static final int kRightMotor1Port = 4;
+    public static final int kRightMotor2Port = 3;
+    public static final boolean kRightEncoderReversed = false;
+    public static final boolean kLeftEncoderReversed = true;
     
     public static final double kWheelDiameterInches = 6;
     public static final double kEncoderDistancePerRevolution = (kWheelDiameterInches * Math.PI);
@@ -33,7 +35,6 @@ public final class Constants {
     public static final DifferentialDriveKinematics kDriveKinematics =
         new DifferentialDriveKinematics(kTrackwidthMeters);
 
-    public static final double kWheelDiameterMeters = 0.15;
     public static final double kaVoltSecondsSquaredPerMeter = 0;
     public static final double kvVoltSecondsPerMeter = 0;
     public static double ksVolts = 0.05;
@@ -41,15 +42,20 @@ public final class Constants {
   }
   
   public static final class ShooterConstants {
+    public static int kShooterBaseRPM = 3700;
+    public static double kShooterRPMIncreasePerFoot = 40 ;
+      
     public static final double kSVolts = 0.05;
     public static final boolean kEncoderReversed = false;
     
-    public static final int kShooterMotorPort = 1;
-    public static final int kFeederMotorPort = 2;
+    public static final int kShooterMotorPort = 9;
+    public static final int kFeederMotorPort = 8;
     
     public static final double kShooterFreeRPS = 5300;
     public static final double kShooterTargetRPS = 4000;
     public static final double kShooterToleranceRPS = 50;
+    public static final double kShootTimeSeconds = 2;
+    public static final double kShootTimeoutSeconds = 15;
     
     // These are not real PID gains, and will have to be tuned for your specific robot.
     public static final double kP = 1;
@@ -77,10 +83,11 @@ public final class Constants {
   }
   
   public static final class OIConstants {
-    public static final int kDriverControllerPort = 0;
+    public static final int kManipulatorControllerPort = 0;
     public static final int kDriverControllerPort1 = 1;
     public static final int kDriverControllerPort2 = 2;
   }
-  
+
+
   
 }

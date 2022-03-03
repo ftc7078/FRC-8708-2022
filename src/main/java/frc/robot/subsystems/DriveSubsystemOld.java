@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
@@ -85,4 +86,13 @@ public class DriveSubsystemOld extends SubsystemBase {
   public void resetEncoders() {
     //I don't have any
   }
+
+public void resetOdometry(Pose2d initialPose) {
+  //I cant
+}
+
+public void  tankDriveVolts(int i, int j) {
+    m_leftMotors.set(i);
+    m_rightMotors.set(j);
+}
 }

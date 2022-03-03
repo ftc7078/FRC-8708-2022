@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import java.util.function.BooleanSupplier;
+
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
@@ -11,7 +13,11 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Encoder;
+import frc.robot.Constants;
 import frc.robot.Constants.ShooterConstants;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -20,10 +26,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class ShooterSimple extends SubsystemBase  {
   private final CANSparkMax m_shooterMotor = new CANSparkMax(ShooterConstants.kShooterMotorPort,MotorType.kBrushless);
-  private final CANSparkMax m_feederMotor = new CANSparkMax(ShooterConstants.kFeederMotorPort,MotorType.kBrushed);
+  private final CANSparkMax m_feederMotor = new CANSparkMax(ShooterConstants.kFeederMotorPort,MotorType.kBrushless);
   private final SparkMaxPIDController m_pidController = m_shooterMotor.getPIDController();
   private final RelativeEncoder m_encoder = m_shooterMotor.getEncoder();
-  public double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput, maxRPM;
+  public double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput, maxRPM, m_rpm;
   
   
   public ShooterSimple() {
@@ -37,6 +43,7 @@ public class ShooterSimple extends SubsystemBase  {
     kMaxOutput = 1; 
     kMinOutput = -1;
     maxRPM = 5700;
+    m_rpm = 0;
     
     // set PID coefficients
     m_pidController.setP(kP);
@@ -97,6 +104,7 @@ public class ShooterSimple extends SubsystemBase  {
        *  com.revrobotics.CANSparkMax.ControlType.kVoltage
        */
       double setPoint = speed*maxRPM;
+
       m_pidController.setReference(setPoint*4, CANSparkMax.ControlType.kVelocity);
       
       SmartDashboard.putNumber("Speed from controler", speed);
@@ -104,22 +112,71 @@ public class ShooterSimple extends SubsystemBase  {
       SmartDashboard.putNumber("Applied Output", m_shooterMotor.getAppliedOutput());      
       SmartDashboard.putNumber("ProcessVariable", m_encoder.getVelocity());
   }
+
+  public void setRPM(double rpm) {
+    m_rpm=rpm;
+    m_pidController.setReference(m_rpm, CANSparkMax.ControlType.kVelocity);
+    SmartDashboard.putNumber("SetPoint", m_rpm);
+  }
   
+  public void faster() {
+    setRPM(m_rpm+100);
+  }
+
+  public void slower() {
+    setRPM(m_rpm-100);
+  }
+
+  public void autoSpeed() {
+    //Get the distance from the goal by looking at the area the reflector takes up and doing some math that is roughly right
+    //Multiply the distance in feet by a number and add to a base rpm to get an approximation of how fast to run the shooter wheel.
+
+    NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
+    NetworkTableEntry ta = table.getEntry("ta");
+    if (ta.getDouble(0) > 0) {
+      double distance = 3/Math.sqrt(ta.getDouble(0));
+      SmartDashboard.putNumber("Distance", distance );
+      setRPM(ShooterConstants.kShooterBaseRPM + (distance * ShooterConstants.kShooterRPMIncreasePerFoot));
+    } else {
+      SmartDashboard.putString("Distance", "Not Found" );
+      setRPM(ShooterConstants.kShooterBaseRPM);
+    }
+
+  }
+
   public boolean atSetpoint() {
-    //TODO implement this
-    return true;
+    SmartDashboard.putNumber("velocity", m_encoder.getVelocity());
+    SmartDashboard.putNumber("m_rpm", m_rpm);
+    SmartDashboard.updateValues();
+    return(m_encoder.getVelocity() > (m_rpm - 10) );
   }
   
   public void runFeeder() {
     m_feederMotor.set(ShooterConstants.kFeederSpeed);
   }
-  
-  public void disable() {
-    m_shooterMotor.set(0);
+
+  public void runFeederBackwards() {
+    m_feederMotor.set(-ShooterConstants.kFeederSpeed);
   }
   
+  public void stopFlywheel() {
+    setRPM(0);
+    m_shooterMotor.set(0);
+  }
+
+  
+  
   public void enable() {
-    
+    if (m_rpm==0) {
+      autoSpeed();
+    } else {
+     setRPM(m_rpm); 
+    }
+  }
+
+  public void disable() {
+    setRPM(0);
+    stopFeeder();
   }
   
   public void stopFeeder() {
