@@ -29,21 +29,23 @@ public class ShooterSimple extends SubsystemBase  {
   private final CANSparkMax m_feederMotor = new CANSparkMax(ShooterConstants.kFeederMotorPort,MotorType.kBrushless);
   private final SparkMaxPIDController m_pidController = m_shooterMotor.getPIDController();
   private final RelativeEncoder m_encoder = m_shooterMotor.getEncoder();
-  public double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput, maxRPM, m_rpm;
-  
+  public double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput, maxRPM, m_rpm, m_shooterTargetSpeed;
+  public int speedStepSize = 100;
   
   public ShooterSimple() {
     m_shooterMotor.restoreFactoryDefaults();
     // PID coefficients
-    kP = 7e-5; 
-    kI = 0;
-    kD = 0; 
-    kIz = 0; 
-    kFF = 0.000015; 
     kMaxOutput = 1; 
-    kMinOutput = -1;
+    kMinOutput = 0;
     maxRPM = 5700;
     m_rpm = 0;
+    m_shooterTargetSpeed = ShooterConstants.kShooterBaseRPM;
+
+    kP = 0.0002;
+    kI = 0;
+    kD = 0.0008;
+    kIz = 0;
+    kFF = 0.00018;
     
     // set PID coefficients
     m_pidController.setP(kP);
@@ -61,11 +63,12 @@ public class ShooterSimple extends SubsystemBase  {
     SmartDashboard.putNumber("Feed Forward", kFF);
     SmartDashboard.putNumber("Max Output", kMaxOutput);
     SmartDashboard.putNumber("Min Output", kMinOutput);
-
+    m_feederMotor.setInverted(true);
   }
   
   
   public void periodic() {
+    //setShooter(.3);
   }
 
   public void setShooter(double speed) {
@@ -105,7 +108,7 @@ public class ShooterSimple extends SubsystemBase  {
        */
       double setPoint = speed*maxRPM;
 
-      m_pidController.setReference(setPoint*4, CANSparkMax.ControlType.kVelocity);
+      m_pidController.setReference(setPoint, CANSparkMax.ControlType.kVelocity);
       
       SmartDashboard.putNumber("Speed from controler", speed);
       SmartDashboard.putNumber("SetPoint", setPoint);
@@ -116,16 +119,24 @@ public class ShooterSimple extends SubsystemBase  {
   public void setRPM(double rpm) {
     m_rpm=rpm;
     m_pidController.setReference(m_rpm, CANSparkMax.ControlType.kVelocity);
-    SmartDashboard.putNumber("SetPoint", m_rpm);
+    SmartDashboard.putNumber("SetPoint", m_rpm*3);
   }
   
-  public void faster() {
-    setRPM(m_rpm+100);
-  }
 
   public void slower() {
-    setRPM(m_rpm-100);
+    m_shooterTargetSpeed = Math.floorDiv((int)m_shooterTargetSpeed - speedStepSize, speedStepSize) * speedStepSize;
+    SmartDashboard.putNumber("Shooter Target Speed", m_shooterTargetSpeed);
   }
+
+  public void faster() {
+    m_shooterTargetSpeed = Math.floorDiv((int)m_shooterTargetSpeed + speedStepSize, speedStepSize) * speedStepSize;
+    SmartDashboard.putNumber("Shooter Target Speed", m_shooterTargetSpeed);
+  }
+
+  public void setTargetSpeed(double targetSpeed) {
+    m_shooterTargetSpeed=targetSpeed;
+  }
+
 
   public void autoSpeed() {
     //Get the distance from the goal by looking at the area the reflector takes up and doing some math that is roughly right
@@ -136,11 +147,12 @@ public class ShooterSimple extends SubsystemBase  {
     if (ta.getDouble(0) > 0) {
       double distance = 3/Math.sqrt(ta.getDouble(0));
       SmartDashboard.putNumber("Distance", distance );
-      setRPM(ShooterConstants.kShooterBaseRPM + (distance * ShooterConstants.kShooterRPMIncreasePerFoot));
+      m_shooterTargetSpeed = (ShooterConstants.kShooterBaseRPM + (distance * ShooterConstants.kShooterRPMIncreasePerFoot));
     } else {
       SmartDashboard.putString("Distance", "Not Found" );
-      setRPM(ShooterConstants.kShooterBaseRPM);
+      m_shooterTargetSpeed = ShooterConstants.kShooterBaseRPM;
     }
+    SmartDashboard.putNumber("Shooter Target Speed", m_shooterTargetSpeed);
 
   }
 
@@ -148,7 +160,7 @@ public class ShooterSimple extends SubsystemBase  {
     SmartDashboard.putNumber("velocity", m_encoder.getVelocity());
     SmartDashboard.putNumber("m_rpm", m_rpm);
     SmartDashboard.updateValues();
-    return(m_encoder.getVelocity() > (m_rpm - 10) );
+    return(m_encoder.getVelocity() > (m_rpm - ShooterConstants.kShooterToleranceRPM) );
   }
   
   public void runFeeder() {
@@ -158,7 +170,11 @@ public class ShooterSimple extends SubsystemBase  {
   public void runFeederBackwards() {
     m_feederMotor.set(-ShooterConstants.kFeederSpeed);
   }
-  
+    
+  public void stopFeeder() {
+    m_feederMotor.set(0);
+  }
+
   public void stopFlywheel() {
     setRPM(0);
     m_shooterMotor.set(0);
@@ -167,21 +183,14 @@ public class ShooterSimple extends SubsystemBase  {
   
   
   public void enable() {
-    if (m_rpm==0) {
-      autoSpeed();
-    } else {
-     setRPM(m_rpm); 
-    }
+      setRPM(m_shooterTargetSpeed);
   }
 
   public void disable() {
     setRPM(0);
     stopFeeder();
   }
-  
-  public void stopFeeder() {
-    m_feederMotor.set(0);
-  }
+
   
   public double getMotorPower() {
     return m_shooterMotor.get();

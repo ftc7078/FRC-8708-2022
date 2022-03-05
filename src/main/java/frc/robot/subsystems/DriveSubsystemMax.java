@@ -18,6 +18,8 @@ import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.interfaces.Gyro;
+import edu.wpi.first.wpilibj.motorcontrol.MotorController;
+import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
@@ -32,6 +34,9 @@ public class DriveSubsystemMax extends SubsystemBase {
   // The motors on the right side of the drive.
   CANSparkMax m_rightMotor1 = new CANSparkMax(DriveConstants.kRightMotor1Port,MotorType.kBrushed);
   CANSparkMax m_rightMotor2 = new CANSparkMax(DriveConstants.kRightMotor2Port,MotorType.kBrushed);
+  MotorControllerGroup m_leftMotors = new MotorControllerGroup(m_leftMotor1, m_leftMotor2);
+  MotorControllerGroup m_rightMotors = new MotorControllerGroup(m_rightMotor1, m_rightMotor2);
+
   RelativeEncoder m_leftEncoder = m_leftMotor1.getEncoder(Type.kQuadrature, 8128);
   RelativeEncoder m_rightEncoder = m_rightMotor1.getEncoder(Type.kQuadrature, 8128);
   SparkMaxPIDController m_rightPID = m_rightMotor1.getPIDController();
@@ -45,7 +50,7 @@ public class DriveSubsystemMax extends SubsystemBase {
     new MotorControllerGroup(m_rightMotor1,m_rightMotor2);   
     */
     // The robot's drive
-    private final DifferentialDrive m_drive = new DifferentialDrive(m_leftMotor1, m_rightMotor1);
+    private final DifferentialDrive m_drive = new DifferentialDrive(m_leftMotors, m_rightMotors);
 
     // The gyro sensor
     private final Gyro m_gyro = new ADXRS450_Gyro();
@@ -60,10 +65,9 @@ public class DriveSubsystemMax extends SubsystemBase {
   public DriveSubsystemMax() {
     // We need to invert one side of the drivetrain so that positive voltages
     // result in both sides moving forward.
-    m_leftMotor1.setInverted(true);
-    m_leftMotor2.setInverted(true);
-    m_rightMotor2.follow(m_rightMotor1);
-    m_leftMotor2.follow(m_leftMotor1);
+    m_leftMotors.setInverted(true);
+    
+
 
 
     // Sets the distance per pulse for the encoders
@@ -107,21 +111,15 @@ public class DriveSubsystemMax extends SubsystemBase {
   
   
   private void tankDrive(double leftSpeed, double rightSpeed) {
-    tankDrive(leftSpeed,rightSpeed,true);
+    //tankDrive(leftSpeed,rightSpeed,true);
+    m_drive.tankDrive(leftSpeed, rightSpeed,true);
   }
   
-  private void tankDrive(double leftSpeed, double rightSpeed, boolean square) {
-    if (square) {
-      setLeftMotors(leftSpeed*leftSpeed);
-      setRightMotors(rightSpeed*rightSpeed);
-    } else {
-      setLeftMotors(leftSpeed);
-      setRightMotors(rightSpeed);
-    }
-  }
+
     
   @Override
   public void periodic() {
+    super.periodic();
     // Update the odometry in the periodic block
     m_odometry.update(
         m_gyro.getRotation2d(), m_leftEncoder.getPosition(), m_rightEncoder.getPosition());
@@ -163,6 +161,14 @@ public class DriveSubsystemMax extends SubsystemBase {
    */
   public void arcadeDrive(double fwd, double rot) {
     m_drive.arcadeDrive(fwd, rot);
+  }
+
+  public void forward() {
+    tankDrive(-0.5, -0.5);
+  }
+
+  public void stop() {
+    tankDrive(0,0);
   }
 
   /**

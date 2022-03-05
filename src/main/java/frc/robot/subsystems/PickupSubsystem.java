@@ -39,6 +39,10 @@ public class PickupSubsystem extends SubsystemBase {
             m_motor.set(0);
         }
 
+        public void reverse() {
+            m_motor.set(-1);
+        }
+
         public void run() {
             armDown();
             runMotor();

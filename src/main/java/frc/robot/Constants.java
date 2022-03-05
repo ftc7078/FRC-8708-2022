@@ -53,14 +53,13 @@ public final class Constants {
     
     public static final double kShooterFreeRPS = 5300;
     public static final double kShooterTargetRPS = 4000;
-    public static final double kShooterToleranceRPS = 50;
+    public static final double kShooterToleranceRPM = 50;
     public static final double kShootTimeSeconds = 2;
     public static final double kShootTimeoutSeconds = 15;
     
     // These are not real PID gains, and will have to be tuned for your specific robot.
-    public static final double kP = 1;
-    public static final double kI = 0;
-    public static final double kD = 0;
+
+    
     
     // On a real robot the feedforward constants should be empirically determined; these are
     // reasonable guesses.
@@ -72,8 +71,8 @@ public final class Constants {
   }
   
   public static final class AutoConstants {
-    public static final double kAutoTimeoutSeconds = 12;
-    public static final double kAutoShootTimeSeconds = 7;
+    public static final double kAutoTimeoutSeconds = 6;
+    public static final double kAutoShootTimeSeconds = 3;
     public static final double kMaxSpeedMetersPerSecond = 3;
     public static final double kMaxAccelerationMetersPerSecondSquared = 3;
   
