@@ -13,7 +13,8 @@ public class TransferSubsystem extends SubsystemBase {
   //private final MotorControllerGroup motors = new MotorControllerGroup(m_motorBottom, m_motorTop);
   
   public TransferSubsystem() {
-      m_motorBottom.setInverted(true);
+      m_motorBottom.setInverted(false);
+      m_motorTop.setInverted(true);
   }
 
   public void run() {
