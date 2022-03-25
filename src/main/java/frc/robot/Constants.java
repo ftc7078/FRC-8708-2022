@@ -20,10 +20,10 @@ public final class Constants {
   public static final int kPickupMotor = 5;
 
   public static final class DriveConstants {
-    public static final int kLeftMotor1Port = 1;
-    public static final int kLeftMotor2Port = 2;
-    public static final int kRightMotor1Port = 4;
-    public static final int kRightMotor2Port = 3;
+    public static final int kLeftMotor1Port = 4;
+    public static final int kLeftMotor2Port = 3;
+    public static final int kRightMotor1Port = 1;
+    public static final int kRightMotor2Port = 2;
     public static final boolean kRightEncoderReversed = false;
     public static final boolean kLeftEncoderReversed = true;
     
@@ -35,9 +35,10 @@ public final class Constants {
     public static final DifferentialDriveKinematics kDriveKinematics =
         new DifferentialDriveKinematics(kTrackwidthMeters);
 
-    public static final double kaVoltSecondsSquaredPerMeter = 0;
-    public static final double kvVoltSecondsPerMeter = 0;
-    public static double ksVolts = 0.05;
+    public static double ks = 0.63;
+    public static double kv = 3.26;
+    public static double ka = 0.71;
+    
     public static double kPDriveVel = 3;
   }
   

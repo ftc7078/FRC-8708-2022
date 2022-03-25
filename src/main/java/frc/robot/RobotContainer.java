@@ -44,6 +44,7 @@ import frc.robot.subsystems.DriveSubsystemMax;
 import frc.robot.subsystems.PickupSubsystem;
 import frc.robot.subsystems.ShooterSimple;
 import frc.robot.subsystems.TransferSubsystem;
+import frc.robot.vision.MyVisionThread;
 
 /**
 * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -53,6 +54,7 @@ import frc.robot.subsystems.TransferSubsystem;
 */
 public class RobotContainer {
     // The robot's subsystems
+    private Thread m_visionThread;
     final DriveSubsystemMax m_robotDrive = new DriveSubsystemMax();
     final PickupSubsystem m_pickup = new PickupSubsystem();
     final ShooterSimple m_shooter = new ShooterSimple();
@@ -103,6 +105,10 @@ public class RobotContainer {
 
         m_chooser.setDefaultOption("Classic Auto", m_autoCommand);
         m_chooser.addOption("More Balls Auto", m_complexAuto);
+
+        m_visionThread = new MyVisionThread();
+        m_visionThread.setDaemon(true);
+        m_visionThread.start();
         
     }
     
@@ -230,9 +236,9 @@ public class RobotContainer {
         var autoVoltageConstraint =
         new DifferentialDriveVoltageConstraint(
         new SimpleMotorFeedforward(
-        DriveConstants.ksVolts,
-        DriveConstants.kvVoltSecondsPerMeter,
-        DriveConstants.kaVoltSecondsSquaredPerMeter),
+        DriveConstants.ks,
+        DriveConstants.kv,
+        DriveConstants.ka),
         DriveConstants.kDriveKinematics,
         10);
         
@@ -264,9 +270,9 @@ public class RobotContainer {
         m_robotDrive::getPose,
         new RamseteController(AutoConstants.kRamseteB, AutoConstants.kRamseteZeta),
         new SimpleMotorFeedforward(
-        DriveConstants.ksVolts,
-        DriveConstants.kvVoltSecondsPerMeter,
-        DriveConstants.kaVoltSecondsSquaredPerMeter),
+        DriveConstants.ks,
+        DriveConstants.kv,
+        DriveConstants.ka),
         DriveConstants.kDriveKinematics,
         m_robotDrive::getWheelSpeeds,
         new PIDController(DriveConstants.kPDriveVel, 0, 0),

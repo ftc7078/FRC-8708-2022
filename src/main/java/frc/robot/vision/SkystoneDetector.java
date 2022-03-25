@@ -30,7 +30,7 @@ public class SkystoneDetector {
         this.width = width;
     }
 
-    public Mat processFrame(Mat input) {
+    public Mat processFrame(Mat input, int color) {
         // "Mat" stands for matrix, which is basically the image that the detector will process
         // the input matrix is the image coming from the camera
         // the function will return a matrix to be drawn on your phone's screen
@@ -43,18 +43,23 @@ public class SkystoneDetector {
         Mat mat = new Mat();
         Imgproc.cvtColor(input, mat, Imgproc.COLOR_RGB2HSV);
 
-        // if something is wrong, we assume there's no skystone
+        // if something is wrong, we assume there's no ball
         if (mat.empty()) {
-            location = SkystoneLocation.NONE;
+            location = null;
             return input;
         }
 
-        // We create a HSV range for yellow to detect regular stones
+        // We create a HSV range for both colors in an if statement to decide on which team we are to detect balls
         // NOTE: In OpenCV's implementation,
         // Hue values are half the real value
-        Scalar lowHSV = new Scalar(20, 100, 100); // lower bound HSV for yellow
-        Scalar highHSV = new Scalar(50, 255, 255); // higher bound HSV for yellow
+        Scalar lowHSV = new Scalar(150, 150, 0); // lower bound HSV for blue
+        Scalar highHSV = new Scalar(180, 255, 255); // higher bound HSV for blue
+        if (color != 0) { //red color array
+            lowHSV = new Scalar(0, 150, 0); // lower bound HSV for red
+            highHSV = new Scalar(10, 255, 255); // higher bound HSV for red
+        }
         Mat thresh = new Mat();
+        
 
         // We'll get a black and white image. The white regions represent the regular stones.
         // inRange(): thresh[i][j] = {255,255,255} if mat[i][i] is within the range

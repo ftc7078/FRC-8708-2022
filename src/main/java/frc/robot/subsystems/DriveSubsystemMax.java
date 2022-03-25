@@ -100,14 +100,12 @@ public class DriveSubsystemMax extends SubsystemBase {
   }
   
   private void setLeftMotors(double d) {
-    m_leftMotor1.set(d);
-    m_leftMotor2.set(d);
+    m_leftMotors.set(d);
   }
   
   private void setRightMotors(double d) {
-    m_rightMotor1.set(d);
-    m_rightMotor2.set(d);
-  }
+    m_rightMotors.set(d);
+    }
   
   
   private void tankDrive(double leftSpeed, double rightSpeed) {

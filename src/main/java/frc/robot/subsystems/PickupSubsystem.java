@@ -16,7 +16,7 @@ public class PickupSubsystem extends SubsystemBase {
         PneumaticsControlModule m_pnu = new PneumaticsControlModule();
         DoubleSolenoid m_arm = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 0, 1);
         CANSparkMax m_motor = new CANSparkMax(Constants.kPickupMotor ,MotorType.kBrushed);
-
+        
         public PickupSubsystem() { 
             m_arm.set(Value.kReverse);
             
