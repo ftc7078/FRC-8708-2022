@@ -36,11 +36,13 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.POVButton;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.subsystems.DriveSubsystemMax;
+import frc.robot.subsystems.HangerSubsystem;
 import frc.robot.subsystems.PickupSubsystem;
 import frc.robot.subsystems.ShooterSimple;
 import frc.robot.subsystems.TransferSubsystem;
@@ -57,6 +59,7 @@ public class RobotContainer {
     private Thread m_visionThread;
     final DriveSubsystemMax m_robotDrive = new DriveSubsystemMax();
     final PickupSubsystem m_pickup = new PickupSubsystem();
+    final HangerSubsystem m_hook = new HangerSubsystem();
     final ShooterSimple m_shooter = new ShooterSimple();
     final TransferSubsystem m_transfer = new TransferSubsystem();
     SendableChooser<Command> m_chooser = new SendableChooser<>();
@@ -91,7 +94,7 @@ public class RobotContainer {
         // Configure default commands
         // Set the default drive command to split-stick arcade drive
         
-        Joystick m_buttonStick = m_driverControllerJoystickLeft;
+        Joystick m_buttonStick = m_driverControllerJoystickRight;
         m_robotDrive.setDefaultCommand(
         // A split-stick arcade command, with forward/backward controlled by the left
         // hand, and turning controlled by the right.
@@ -127,7 +130,8 @@ public class RobotContainer {
         //new InstantCommand(m_shooter::runFeeder, m_shooter),
         //new WaitCommand(2),
         //new InstantCommand(m_shooter::stopFeeder, m_shooter)));
-
+        new POVButton(m_manipulatorController, 180).whenPressed( new InstantCommand(m_hook::retract, m_hook));
+        new POVButton(m_manipulatorController, 0).whenPressed( new InstantCommand(m_hook::extend, m_hook));
         new JoystickButton(m_manipulatorController, Button.kB.value).whenPressed(
             new InstantCommand(m_shooter::enable, m_shooter)
             .andThen(
