@@ -7,6 +7,7 @@ package frc.robot;
 import java.util.List;
 
 import edu.wpi.first.cscore.HttpCamera;
+import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.cscore.VideoSource;
 import edu.wpi.first.cscore.HttpCamera.HttpCameraKind;
 import edu.wpi.first.math.controller.PIDController;
@@ -109,9 +110,17 @@ public class RobotContainer {
         m_chooser.setDefaultOption("Classic Auto", m_autoCommand);
         m_chooser.addOption("More Balls Auto", m_complexAuto);
 
-        m_visionThread = new MyVisionThread();
-        m_visionThread.setDaemon(true);
-        m_visionThread.start();
+        UsbCamera camera = new UsbCamera("Mr Poopy Butthole", 0);
+        
+        if (camera.isConnected() ) {
+            System.out.println("Webcam Found.  Firing up vision.");
+            m_visionThread = new MyVisionThread(camera);
+            m_visionThread.setDaemon(true);
+            m_visionThread.start();
+        } else {
+            System.out.println("No webcam. No vision");
+            camera.close();
+        }
         
     }
     

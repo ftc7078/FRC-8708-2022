@@ -77,6 +77,7 @@ public class DriveSubsystemMax extends SubsystemBase {
 
     resetEncoders();
     m_odometry = new DifferentialDriveOdometry(m_gyro.getRotation2d());
+    m_gyro.calibrate();
   
 
   }

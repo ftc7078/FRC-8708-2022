@@ -6,19 +6,31 @@ import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cameraserver.CameraServerSharedStore;
 import edu.wpi.first.cscore.CvSink;
 import edu.wpi.first.cscore.CvSource;
 import edu.wpi.first.cscore.UsbCamera;
+import edu.wpi.first.cscore.VideoSink;
 import edu.wpi.first.cscore.VideoMode.PixelFormat;
 
 public class MyVisionThread extends Thread {
-
-
+    UsbCamera m_camera;
+    public MyVisionThread(UsbCamera camera) {
+        m_camera = camera;
+    }
     public void run() {
-        UsbCamera camera = CameraServer.startAutomaticCapture();
+        
+        if (m_camera == null ) {
+            m_camera = new UsbCamera("RoboWebcam", 0);
+        }
+        
+        
+
+        CameraServer.startAutomaticCapture(m_camera);
+
         // Set the resolution
-        camera.setResolution(640, 480);
-        camera.setPixelFormat(PixelFormat.kYUYV);
+        m_camera.setResolution(640, 480);
+        m_camera.setPixelFormat(PixelFormat.kYUYV);
 
         // Get a CvSink. This will capture Mats from the camera
         CvSink cvSink = CameraServer.getVideo();
