@@ -112,7 +112,7 @@ public class RobotContainer {
 
         UsbCamera camera = new UsbCamera("Mr Poopy Butthole", 0);
         
-        if (camera.isConnected() ) {
+        if (camera.isConnected()||true ) {
             System.out.println("Webcam Found.  Firing up vision.");
             m_visionThread = new MyVisionThread(camera);
             m_visionThread.setDaemon(true);

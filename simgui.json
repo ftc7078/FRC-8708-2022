@@ -23,6 +23,7 @@
     "types": {
       "/FMSInfo": "FMSInfo",
       "/LiveWindow/DriveSubsystemMax": "Subsystem",
+      "/LiveWindow/HangerSubsystem": "Subsystem",
       "/LiveWindow/PickupSubsystem": "Subsystem",
       "/LiveWindow/ShooterSimple": "Subsystem",
       "/LiveWindow/TransferSubsystem": "Subsystem",
@@ -30,6 +31,14 @@
       "/LiveWindow/Ungrouped/DifferentialDrive[1]": "DifferentialDrive",
       "/LiveWindow/Ungrouped/Scheduler": "Scheduler",
       "/Shuffleboard/Driving/Autonomous": "String Chooser"
+    }
+  },
+  "NetworkTables": {
+    "CameraPublisher": {
+      "Circle": {
+        "open": true
+      },
+      "open": true
     }
   }
 }

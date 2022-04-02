@@ -5,10 +5,14 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
-
+import java.awt.geom.Point2D;
+import java.awt.Robot;
+import java.awt.AWTException;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +25,8 @@ public class SkystoneDetector {
 
     private int width; // width of the image
     SkystoneLocation location;
+    private Point center = new Point(0, 0);
+    private Robot robot;
 
     /**
      *
@@ -73,18 +79,47 @@ public class SkystoneDetector {
         // https://docs.opencv.org/3.4/da/d0c/tutorial_bounding_rects_circles.html
         // Oftentimes the edges are disconnected. findContours connects these edges.
         // We then find the bounding rectangles of those contours
-        List<MatOfPoint> contours = new ArrayList<>();
-        Mat hierarchy = new Mat();
-        Imgproc.findContours(edges, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-
-        MatOfPoint2f[] contoursPoly  = new MatOfPoint2f[contours.size()];
-        Rect[] boundRect = new Rect[contours.size()];
-        for (int i = 0; i < contours.size(); i++) {
-            contoursPoly[i] = new MatOfPoint2f();
-            Imgproc.approxPolyDP(new MatOfPoint2f(contours.get(i).toArray()), contoursPoly[i], 3, true);
-            boundRect[i] = Imgproc.boundingRect(new MatOfPoint(contoursPoly[i].toArray()));
+        Mat gray = new Mat();
+        Imgproc.cvtColor(input, gray, Imgproc.COLOR_BGR2GRAY);
+        Imgproc.medianBlur(gray, gray, 5);
+        Mat circles = new Mat();
+        Imgproc.HoughCircles(gray, circles, Imgproc.HOUGH_GRADIENT, 1.0,
+                (double)gray.rows()/.0000001, // change this value to detect circles with different distances to each other
+                100.0, 30.0, 20, 600); // change the last two parameters
+                // (min_radius & max_radius) to detect larger circles
+        Color blue = new Color(0, 0 , 255);
+        Color red = new Color(204, 0, 0);
+        int cx;
+        int cy;
+        Boolean colorDetector;
+        try {
+            this.robot = new Robot();
+        } catch (AWTException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
-        Imgproc.cvtColor(mat, input, Imgproc.COLOR_HSV2RGB);
+
+        //Draw Circles on image
+        for (int x = 0; x < circles.cols(); x++) {
+            double[] c = circles.get(0, x);
+            this.center = new Point(Math.round(c[0]), Math.round(c[1]));
+            // circle center
+            Imgproc.circle(input, center, 1, new Scalar(0,100,100), 3, 8, 0 );
+            // circle outline
+            int radius = (int) Math.round(c[2]);
+            Imgproc.circle(input, center, radius, new Scalar(255,0,255), 3, 8, 0 );
+        }
+        cx = (int)this.center.x;
+        cy = (int)this.center.y;
+        Mat colorDec = new Mat();
+        Color colored = this.robot.getPixelColor(cx, cy);
+        if (colored == red && color != 0){
+            //Add red command
+        }
+        if (colored == blue && color == 0){
+            //Add blue command
+        }
+
 
         // Iterate and check whether the bounding boxes
         // cover left and/or right side of the image
@@ -92,16 +127,7 @@ public class SkystoneDetector {
         double right_x = 0.75 * width;
         boolean left = false; // true if regular stone found on the left side
         boolean right = false; // "" "" on the right side
-        for (int i = 0; i != boundRect.length; i++) {
-            if (boundRect[i].x < left_x)
-                left = true;
-            if (boundRect[i].x + boundRect[i].width > right_x)
-                right = true;
-
-            // draw red bounding rectangles on mat
-            // the mat has been converted to HSV so we need to use HSV as well
-            Imgproc.rectangle(input, boundRect[i], new Scalar(0, 0, 255));
-        }
+        
 
         // if there is no yellow regions on a side
         // that side should be a Skystone
