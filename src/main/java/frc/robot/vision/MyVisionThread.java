@@ -19,7 +19,7 @@ public class MyVisionThread extends Thread {
     public void run() {
         
         if (m_camera == null ) {
-            m_camera = new UsbCamera("RoboWebcam", 0);
+            m_camera = new UsbCamera("RoboWebcam", 1);
         }
         
         
