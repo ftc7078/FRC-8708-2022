@@ -144,7 +144,7 @@ public class RobotContainer {
         //new InstantCommand(m_shooter::stopFeeder, m_shooter)));
         new POVButton(m_manipulatorController, 180).whenPressed( new InstantCommand(m_hook::retract, m_hook));
         new POVButton(m_manipulatorController, 0).whenPressed( new InstantCommand(m_hook::extend, m_hook));
-        new JoystickButton(m_manipulatorController, Button.kRightBumper.value).whenPressed(
+        new TriggerAsButton(m_manipulatorController, 1, .5).whenPressed(
             new InstantCommand(m_shooter::enable, m_shooter)
             .andThen(
                 // Wait until the shooter is at speed before feeding the frisbees
