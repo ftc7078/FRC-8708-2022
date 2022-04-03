@@ -89,12 +89,7 @@ public class SkystoneDetector {
         Color red = new Color(204, 0, 0);
         int cx;
         int cy;
-        try {
-            this.robot = new Robot();
-        } catch (AWTException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+
 
         //Draw Circles on image
         for (int x = 0; x < circles.cols(); x++) {
@@ -108,14 +103,6 @@ public class SkystoneDetector {
         }
         cx = (int)this.center.x;
         cy = (int)this.center.y;
-        Color colored = this.robot.getPixelColor(cx, cy);
-        if (colored == red && color != 0){
-            //Add red command
-        }
-        if (colored == blue && color == 0){
-            //Add blue command
-        }
-
 
         // Iterate and check whether the bounding boxes
         // cover left and/or right side of the image
