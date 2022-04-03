@@ -15,9 +15,7 @@ import edu.wpi.first.cscore.VideoMode.PixelFormat;
 
 public class MyVisionThread extends Thread {
     UsbCamera m_camera;
-    public MyVisionThread(UsbCamera camera) {
-        m_camera = camera;
-    }
+
     public void run() {
         
         if (m_camera == null ) {

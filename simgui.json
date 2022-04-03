@@ -23,6 +23,7 @@
     "types": {
       "/FMSInfo": "FMSInfo",
       "/LiveWindow/DriveSubsystemMax": "Subsystem",
+      "/LiveWindow/HangerSubsystem": "Subsystem",
       "/LiveWindow/PickupSubsystem": "Subsystem",
       "/LiveWindow/ShooterSimple": "Subsystem",
       "/LiveWindow/TransferSubsystem": "Subsystem",
