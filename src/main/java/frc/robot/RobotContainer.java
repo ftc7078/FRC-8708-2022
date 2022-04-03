@@ -6,8 +6,10 @@ package frc.robot;
 
 import java.util.List;
 
+import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.cscore.HttpCamera;
 import edu.wpi.first.cscore.UsbCamera;
+import edu.wpi.first.cscore.UsbCameraInfo;
 import edu.wpi.first.cscore.VideoSource;
 import edu.wpi.first.cscore.HttpCamera.HttpCameraKind;
 import edu.wpi.first.math.controller.PIDController;
@@ -58,6 +60,7 @@ import frc.robot.vision.MyVisionThread;
 public class RobotContainer {
     // The robot's subsystems
     private Thread m_visionThread;
+    private boolean m_webcamPresent;
     final DriveSubsystemMax m_robotDrive = new DriveSubsystemMax();
     final PickupSubsystem m_pickup = new PickupSubsystem();
     final HangerSubsystem m_hook = new HangerSubsystem();
@@ -110,16 +113,16 @@ public class RobotContainer {
         m_chooser.setDefaultOption("Classic Auto", m_autoCommand);
         m_chooser.addOption("More Balls Auto", m_complexAuto);
 
-        UsbCamera camera = new UsbCamera("Mr Poopy Butthole", 0);
         
-        if (camera.isConnected()||true ) {
+        if ( CameraServerJNI.enumerateUsbCameras().length > 0) {
             System.out.println("Webcam Found.  Firing up vision.");
-            m_visionThread = new MyVisionThread(camera);
+            m_visionThread = new MyVisionThread();
             m_visionThread.setDaemon(true);
             m_visionThread.start();
+            m_webcamPresent = true;
         } else {
             System.out.println("No webcam. No vision");
-            camera.close();
+            m_webcamPresent = false;
         }
         
     }
