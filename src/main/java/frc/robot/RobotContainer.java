@@ -180,8 +180,12 @@ public class RobotContainer {
             new InstantCommand(m_transfer::stop, m_transfer).andThen(
             new InstantCommand(m_pickup::stopMotor,m_pickup)));
         new JoystickButton(m_manipulatorController, Button.kLeftBumper.value).whenPressed(new InstantCommand(m_shooter::lowSpeed));
-  
-        
+  new TriggerAsButton(m_manipulatorController, 0, .5).whenPressed(
+new InstantCommand(m_pickup::pickupDown)
+  );
+  new TriggerAsButton(m_manipulatorController, 0, .5).whenReleased(
+    new InstantCommand(m_pickup::pickupUp)
+      );
         
     }
     
