@@ -144,7 +144,7 @@ public class RobotContainer {
         //new InstantCommand(m_shooter::stopFeeder, m_shooter)));
         new POVButton(m_manipulatorController, 180).whenPressed( new InstantCommand(m_hook::retract, m_hook));
         new POVButton(m_manipulatorController, 0).whenPressed( new InstantCommand(m_hook::extend, m_hook));
-        new JoystickButton(m_manipulatorController, Button.kB.value).whenPressed(
+        new JoystickButton(m_manipulatorController, Button.kRightBumper.value).whenPressed(
             new InstantCommand(m_shooter::enable, m_shooter)
             .andThen(
                 // Wait until the shooter is at speed before feeding the frisbees
@@ -173,13 +173,13 @@ public class RobotContainer {
             new InstantCommand(m_shooter::disable, m_shooter).andThen(
             new InstantCommand(m_transfer::stop, m_transfer)
             ));
-        new JoystickButton(m_manipulatorController, Button.kLeftBumper.value).whenPressed(
+        new JoystickButton(m_manipulatorController, Button.kB.value).whenPressed(
             new InstantCommand(m_transfer::backwards, m_transfer).andThen(
             new InstantCommand(m_pickup::reverse,m_pickup)));
-        new JoystickButton(m_manipulatorController, Button.kLeftBumper.value).whenReleased(
+        new JoystickButton(m_manipulatorController, Button.kB.value).whenReleased(
             new InstantCommand(m_transfer::stop, m_transfer).andThen(
             new InstantCommand(m_pickup::stopMotor,m_pickup)));
-        
+        new JoystickButton(m_manipulatorController, Button.kLeftBumper.value).whenPressed(new InstantCommand(m_shooter::lowSpeed));
   
         
         
