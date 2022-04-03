@@ -44,13 +44,19 @@ public class PickupSubsystem extends SubsystemBase {
         }
 
         public void run() {
-            armDown();
             runMotor();
         }
 
         public void stop() {
-            armUp();
             stopMotor();
+        }
+
+        public void pickupDown() {
+            armDown();
+        }
+
+        public void pickupUp() {
+            armUp();
         }
 
 }

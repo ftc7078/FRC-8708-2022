@@ -136,7 +136,9 @@ public class ShooterSimple extends SubsystemBase  {
   public void setTargetSpeed(double targetSpeed) {
     m_shooterTargetSpeed=targetSpeed;
   }
-
+public void lowSpeed() {
+  m_shooterTargetSpeed = 1500;
+}
 
   public void autoSpeed() {
     //Get the distance from the goal by looking at the area the reflector takes up and doing some math that is roughly right
