@@ -32,5 +32,13 @@
       "/LiveWindow/Ungrouped/Scheduler": "Scheduler",
       "/Shuffleboard/Driving/Autonomous": "String Chooser"
     }
+  },
+  "NetworkTables": {
+    "CameraPublisher": {
+      "Circle": {
+        "open": true
+      },
+      "open": true
+    }
   }
 }
