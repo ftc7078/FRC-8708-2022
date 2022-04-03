@@ -3,18 +3,16 @@ package frc.robot.vision;
   
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint;
-import org.opencv.core.MatOfPoint2f;
+
 import org.opencv.core.Point;
-import org.opencv.core.Rect;
+
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
-import java.awt.geom.Point2D;
+
 import java.awt.Robot;
 import java.awt.AWTException;
 import java.awt.Color;
-import java.util.ArrayList;
-import java.util.List;
+
 
 public class SkystoneDetector {
     enum SkystoneLocation {
@@ -91,7 +89,6 @@ public class SkystoneDetector {
         Color red = new Color(204, 0, 0);
         int cx;
         int cy;
-        Boolean colorDetector;
         try {
             this.robot = new Robot();
         } catch (AWTException e) {
@@ -111,7 +108,6 @@ public class SkystoneDetector {
         }
         cx = (int)this.center.x;
         cy = (int)this.center.y;
-        Mat colorDec = new Mat();
         Color colored = this.robot.getPixelColor(cx, cy);
         if (colored == red && color != 0){
             //Add red command
@@ -123,8 +119,6 @@ public class SkystoneDetector {
 
         // Iterate and check whether the bounding boxes
         // cover left and/or right side of the image
-        double left_x = 0.25 * width;
-        double right_x = 0.75 * width;
         boolean left = false; // true if regular stone found on the left side
         boolean right = false; // "" "" on the right side
         
