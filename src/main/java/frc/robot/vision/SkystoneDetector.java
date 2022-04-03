@@ -10,8 +10,7 @@ import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 import java.awt.Robot;
-import java.awt.AWTException;
-import java.awt.Color;
+
 
 
 public class SkystoneDetector {
@@ -24,7 +23,6 @@ public class SkystoneDetector {
     private int width; // width of the image
     SkystoneLocation location;
     private Point center = new Point(0, 0);
-    private Robot robot;
 
     /**
      *
@@ -56,23 +54,7 @@ public class SkystoneDetector {
         // We create a HSV range for both colors in an if statement to decide on which team we are to detect balls
         // NOTE: In OpenCV's implementation,
         // Hue values are half the real value
-        Scalar lowHSV = new Scalar(150, 150, 0); // lower bound HSV for blue
-        Scalar highHSV = new Scalar(180, 255, 255); // higher bound HSV for blue
-        if (color != 0) { //red color array
-            lowHSV = new Scalar(0, 150, 0); // lower bound HSV for red
-            highHSV = new Scalar(10, 255, 255); // higher bound HSV for red
-        }
-        Mat thresh = new Mat();
-        
 
-        // We'll get a black and white image. The white regions represent the regular stones.
-        // inRange(): thresh[i][j] = {255,255,255} if mat[i][i] is within the range
-        Core.inRange(mat, lowHSV, highHSV, thresh);
-
-        // Use Canny Edge Detection to find edges
-        // you might have to tune the thresholds for hysteresis
-        Mat edges = new Mat();
-        Imgproc.Canny(thresh, edges, 100, 300);
 
         // https://docs.opencv.org/3.4/da/d0c/tutorial_bounding_rects_circles.html
         // Oftentimes the edges are disconnected. findContours connects these edges.
@@ -85,10 +67,7 @@ public class SkystoneDetector {
                 (double)gray.rows()/.0000001, // change this value to detect circles with different distances to each other
                 100.0, 30.0, 20, 600); // change the last two parameters
                 // (min_radius & max_radius) to detect larger circles
-        Color blue = new Color(0, 0 , 255);
-        Color red = new Color(204, 0, 0);
-        int cx;
-        int cy;
+
 
 
         //Draw Circles on image
@@ -101,8 +80,7 @@ public class SkystoneDetector {
             int radius = (int) Math.round(c[2]);
             Imgproc.circle(input, center, radius, new Scalar(255,0,255), 3, 8, 0 );
         }
-        cx = (int)this.center.x;
-        cy = (int)this.center.y;
+
 
         // Iterate and check whether the bounding boxes
         // cover left and/or right side of the image
