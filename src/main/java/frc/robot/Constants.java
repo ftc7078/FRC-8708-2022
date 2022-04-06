@@ -29,17 +29,31 @@ public final class Constants {
     
     public static final double kWheelDiameterInches = 6;
     public static final double kEncoderDistancePerRevolution = (kWheelDiameterInches * Math.PI);
+    public static final double kMaxTurnRateDegreesPerS = 180;
+    public static final double kMaxTurnAccDegreesPerSS = 180;
+    
+
+    
     public static final double kMaxAccelerationMetersPerSecondSquared = 3;
     public static final double kMaxSpeedMetersPerSecond = 3;
-    public static final double kTrackwidthMeters = 0.69;
+    public static final double kTrackwidthMeters = 0.558;  //22 inches = 0.558 meters
+    public static final double kMetersPerRadian = kTrackwidthMeters / 2;
+    public static final double kMetersPerDegree = kMetersPerRadian / 57.2958 ;
+
     public static final DifferentialDriveKinematics kDriveKinematics =
         new DifferentialDriveKinematics(kTrackwidthMeters);
 
     public static double ks = 0.63;
     public static double kv = 3.26;
     public static double ka = 0.71;
+    public static double kp = 0.018;
+    public static double ki = 0;
+    public static double kd = 0.0019;
+
+    public static double kPDriveVel = 0.1;
+    public static double kTurnToleranceDeg = 6;
+    public static double kTurnRateToleranceDegPerS = 3;
     
-    public static double kPDriveVel = 3;
   }
   
   public static final class ShooterConstants {
@@ -56,14 +70,9 @@ public final class Constants {
     public static final double kShooterTargetRPS = 4000;
     public static final double kShooterToleranceRPM = 50;
     public static final double kShootTimeSeconds = 2;
-    public static final double kShootTimeoutSeconds = 15;
+    public static final double kShootTimeoutSeconds = 5;
     
-    // These are not real PID gains, and will have to be tuned for your specific robot.
-
-    
-    
-    // On a real robot the feedforward constants should be empirically determined; these are
-    // reasonable guesses.
+   
     public static final double kVVoltSecondsPerRotation =
     // Should have value 12V at free speed...
     12.0 / kShooterFreeRPS;
@@ -74,8 +83,8 @@ public final class Constants {
   public static final class AutoConstants {
     public static final double kAutoTimeoutSeconds = 6;
     public static final double kAutoShootTimeSeconds = 3;
-    public static final double kMaxSpeedMetersPerSecond = 3;
-    public static final double kMaxAccelerationMetersPerSecondSquared = 3;
+    public static final double kMaxSpeedMetersPerSecond = 1;
+    public static final double kMaxAccelerationMetersPerSecondSquared = 1;
   
     // Reasonable baseline values for a RAMSETE follower in units of meters and seconds
     public static final double kRamseteB = 2;

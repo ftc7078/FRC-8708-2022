@@ -13,7 +13,7 @@ import java.awt.Robot;
 
 
 
-public class SkystoneDetector {
+public class BallDetector {
     enum SkystoneLocation {
         LEFT,
         RIGHT,

@@ -4,11 +4,15 @@
 
 package frc.robot;
 
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import frc.robot.commands.TurnToAngle;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -29,6 +33,12 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
+
+    SmartDashboard.putNumber("kp", Constants.DriveConstants.kp);
+    SmartDashboard.putNumber("ki", Constants.DriveConstants.ki);
+    SmartDashboard.putNumber("kd", Constants.DriveConstants.kd);
+    SmartDashboard.putNumber("Angle",90);
+    SmartDashboard.updateValues();
     m_robotContainer = new RobotContainer();
   }
 
@@ -46,7 +56,10 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
 
+
     CommandScheduler.getInstance().run();
+    SmartDashboard.updateValues();
+
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
@@ -60,7 +73,16 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    m_robotContainer.m_robotDrive.kp = SmartDashboard.getNumber("kp",0);
+    m_robotContainer.m_robotDrive.ki = SmartDashboard.getNumber("ki",0);
+    m_robotContainer.m_robotDrive.kd = SmartDashboard.getNumber("kd",0);
+    double angle = SmartDashboard.getNumber("Angle",90);
+    System.out.println("kp" + m_robotContainer.m_robotDrive.kp);
+
+    //m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    m_autonomousCommand = new TurnToAngle(angle,m_robotContainer.m_robotDrive);
+    m_robotContainer.m_robotDrive.resetEncoders();
+    m_robotContainer.m_robotDrive.resetGyro();
     m_robotContainer.m_shooter.setTargetSpeed(3800);
  
     //m_robotContainer.m_robotDrive.setDefaultCommand( new InstantCommand( () -> {}, m_robotContainer.m_robotDrive));

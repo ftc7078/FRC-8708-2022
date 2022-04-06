@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import edu.wpi.first.cscore.CameraServerJNI;
@@ -21,7 +22,10 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
@@ -44,6 +48,8 @@ import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.ShooterConstants;
+import frc.robot.commands.TurnToAngle;
+import frc.robot.commands.TurnToTarget;
 import frc.robot.subsystems.DriveSubsystemMax;
 import frc.robot.subsystems.HangerSubsystem;
 import frc.robot.subsystems.PickupSubsystem;
@@ -66,9 +72,12 @@ public class RobotContainer {
     final HangerSubsystem m_hook = new HangerSubsystem();
     final ShooterSimple m_shooter = new ShooterSimple();
     final TransferSubsystem m_transfer = new TransferSubsystem();
+    Joystick m_buttonStick;
+    
+    NetworkTable m_limelightTable = NetworkTableInstance.getDefault().getTable("limelight");
+    
     SendableChooser<Command> m_chooser = new SendableChooser<>();
-
-
+    
     
     
     // The driver's controller
@@ -93,12 +102,12 @@ public class RobotContainer {
             .withPosition(3,0)
             .withSize(4,4);
         // Configure the button bindings
+        m_buttonStick = m_driverControllerJoystickRight;
         configureButtonBindings();
         
         // Configure default commands
         // Set the default drive command to split-stick arcade drive
         
-        Joystick m_buttonStick = m_driverControllerJoystickRight;
         m_robotDrive.setDefaultCommand(
         // A split-stick arcade command, with forward/backward controlled by the left
         // hand, and turning controlled by the right.
@@ -110,8 +119,9 @@ public class RobotContainer {
         m_robotDrive));
 
 
-        m_chooser.setDefaultOption("Classic Auto", m_autoCommand);
-        m_chooser.addOption("More Balls Auto", m_complexAuto);
+        m_chooser.setDefaultOption("Back and Shoot Auto", m_backAndShoot);
+        m_chooser.addOption("Test Turn Auto", this.getTestTurnAuto());
+        m_chooser.addOption("Example Auto", this.getAutonomousCommand());
 
         
         if ( CameraServerJNI.enumerateUsbCameras().length > 0) {
@@ -128,6 +138,8 @@ public class RobotContainer {
     }
     
     private void configureButtonBindings() {
+        new JoystickButton(m_buttonStick,3).whenPressed(
+            new TurnToTarget(m_robotDrive));
         new JoystickButton(m_manipulatorController, Button.kA.value).whenPressed(
                 new InstantCommand(m_pickup::run, m_pickup).andThen(
                 new InstantCommand(m_transfer::run, m_transfer),
@@ -189,14 +201,7 @@ new InstantCommand(m_pickup::pickupDown)
         
     }
     
-    /**
-    * Use this to pass the autonomous command to the main {@link Robot} class.
-    *
-    * @return the command to run in autonomous
-    */
-    
-
-    private final Command m_complexAuto =
+    private final Command m_backAndShoot =
     // Start the command by spinning up the shooter...
     new  ParallelDeadlineGroup(
         new WaitCommand(1.6),
@@ -222,34 +227,62 @@ new InstantCommand(m_pickup::pickupDown)
               m_shooter.stopFeeder();
             }));
 
-            private final Command m_autoCommand =
-            // Start the command by spinning up the shooter...
-            new  ParallelDeadlineGroup(
-                new WaitCommand(1.6),
-                new RunCommand(m_robotDrive::forward, m_robotDrive)
-                ).andThen(
-                    new InstantCommand(m_shooter::enable,m_shooter)
-                .andThen(
-                    // Wait until the shooter is at speed before feeding the frisbees
-                    new WaitUntilCommand(m_shooter::atSetpoint),
-                    // Start running the feeder
-                    new InstantCommand(m_shooter::runFeeder, m_shooter),
-                    new InstantCommand(m_transfer::run, m_transfer),
-                    // Shoot for the specified time
-                    new WaitCommand(AutoConstants.kAutoShootTimeSeconds))
-                // Add a timeout (will end the command if, for instance, the shooter never gets up to
-                // speed)
-                .withTimeout(AutoConstants.kAutoTimeoutSeconds)
-                // When the command ends, turn off the shooter and the feeder
-                .andThen(
-                    () -> {
-                      m_shooter.disable();
-                      m_transfer.stop();
-                      m_shooter.stopFeeder();
-                    }));
+    /**
+    * Use this to pass the autonomous command to the main {@link Robot} class.
+    *
+    * @return the command to run in autonomous
+    */
+    
 
     public Command getAutonomousCommand() {
         return m_chooser.getSelected();
+    }
+
+    public Command getTestTurnAuto() {
+        return new TurnToAngle(90,m_robotDrive);
+    }
+
+    public Command getTestTurnFailure() {
+                
+                // Create config for trajectory
+                TrajectoryConfig config =
+                new TrajectoryConfig(
+                AutoConstants.kMaxSpeedMetersPerSecond,
+                AutoConstants.kMaxAccelerationMetersPerSecondSquared)
+                // Add kinematics to ensure max speed is actually obeyed
+                .setKinematics(DriveConstants.kDriveKinematics)
+                .setStartVelocity(0)
+                .setEndVelocity(0);
+                
+                // An example trajectory to follow.  All units in meters.
+                Trajectory turn = new Trajectory(List.of(
+                    new Trajectory.State(0,0,0, new Pose2d(0,0, Rotation2d.fromDegrees(0)), 1), 
+                    new Trajectory.State(1,0,0, new Pose2d(0,0, Rotation2d.fromDegrees(90)),1)
+                    ));
+                
+                /* Trajectory turn =
+                TrajectoryGenerator.generateTrajectory(
+                    List.of(new Pose2d(0, 0, new Rotation2d(0)), 
+                            new Pose2d(0,0,Rotation2d.fromDegrees(90))),
+                    config);
+                    */
+
+                RamseteCommand ramseteCommand =
+                new RamseteCommand(
+                turn,
+                m_robotDrive::getPose,
+                new RamseteController(AutoConstants.kRamseteB, AutoConstants.kRamseteZeta),
+                // RamseteCommand passes volts to the callback
+                DriveConstants.kDriveKinematics,
+                m_robotDrive::setWheelSpeeds,
+                m_robotDrive);
+                
+                // Reset odometry to the starting pose of the trajectory.
+                m_robotDrive.resetOdometry(turn.getInitialPose());
+                
+                // Run path following command, then stop at the end.
+                return ramseteCommand.andThen(() -> m_robotDrive.tankDriveVolts(0, 0));
+         
     }
     public Command getAutonomousCommandExample() {
         // Create a voltage constraint to ensure we don't accelerate too fast
