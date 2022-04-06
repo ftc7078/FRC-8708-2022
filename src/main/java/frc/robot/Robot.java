@@ -34,11 +34,14 @@ public class Robot extends TimedRobot {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
 
+    /*  For testing auto turning 
     SmartDashboard.putNumber("kp", Constants.DriveConstants.kp);
     SmartDashboard.putNumber("ki", Constants.DriveConstants.ki);
     SmartDashboard.putNumber("kd", Constants.DriveConstants.kd);
     SmartDashboard.putNumber("Angle",90);
     SmartDashboard.updateValues();
+    */
+    
     m_robotContainer = new RobotContainer();
   }
 
@@ -73,14 +76,14 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     
-    m_robotContainer.m_robotDrive.kp = SmartDashboard.getNumber("kp",0);
-    m_robotContainer.m_robotDrive.ki = SmartDashboard.getNumber("ki",0);
-    m_robotContainer.m_robotDrive.kd = SmartDashboard.getNumber("kd",0);
-    double angle = SmartDashboard.getNumber("Angle",90);
-    System.out.println("kp" + m_robotContainer.m_robotDrive.kp);
+    //m_robotContainer.m_robotDrive.kp = SmartDashboard.getNumber("kp",0);
+    //m_robotContainer.m_robotDrive.ki = SmartDashboard.getNumber("ki",0);
+    //m_robotContainer.m_robotDrive.kd = SmartDashboard.getNumber("kd",0);
+    //double angle = SmartDashboard.getNumber("Angle",90);
+    //System.out.println("kp" + m_robotContainer.m_robotDrive.kp);
+    //m_autonomousCommand = new TurnToAngle(angle,m_robotContainer.m_robotDrive);
 
-    //m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-    m_autonomousCommand = new TurnToAngle(angle,m_robotContainer.m_robotDrive);
+    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
     m_robotContainer.m_robotDrive.resetEncoders();
     m_robotContainer.m_robotDrive.resetGyro();
     m_robotContainer.m_shooter.setTargetSpeed(3800);

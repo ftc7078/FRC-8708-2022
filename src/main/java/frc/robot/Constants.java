@@ -68,7 +68,7 @@ public final class Constants {
     
     public static final double kShooterFreeRPS = 5300;
     public static final double kShooterTargetRPS = 4000;
-    public static final double kShooterToleranceRPM = 50;
+    public static final double kShooterToleranceRPM = 250;
     public static final double kShootTimeSeconds = 2;
     public static final double kShootTimeoutSeconds = 5;
     

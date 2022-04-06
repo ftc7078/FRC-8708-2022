@@ -7,30 +7,38 @@ import org.opencv.core.Mat;
 import org.opencv.core.Point;
 
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
+
+import edu.wpi.first.wpilibj.DriverStation;
 
 import java.awt.Robot;
 
 
 
 public class BallDetector {
-    enum SkystoneLocation {
-        LEFT,
-        RIGHT,
-        NONE
-    }
-
-    private int width; // width of the image
-    SkystoneLocation location;
+ 
     private Point center = new Point(0, 0);
 
     /**
      *
      * @param width The width of the image (check your camera)
      */
-    public void SkystoneDetector(int width) {
-        this.width = width;
-    }
+    Mat small = new Mat();
+    Mat gray = new Mat();
+    boolean blue = false;
+    /*
+    Mat hls = new Mat();
+    Mat mask = new Mat(); 
+    Mat combined = new Mat();
+    */
+    Size resolution = new Size(160,120);
+    
+    public BallDetector() {
+        if (DriverStation.getAlliance() == DriverStation.Alliance.Blue) {
+            blue = true;
+        }
+    } 
 
     public Mat processFrame(Mat input, int color) {
         // "Mat" stands for matrix, which is basically the image that the detector will process
@@ -42,66 +50,59 @@ public class BallDetector {
         // If both are regular stones, it returns NONE to tell the robot to keep looking
 
         // Make a working copy of the input matrix in HSV
-        Mat mat = new Mat();
-        Imgproc.cvtColor(input, mat, Imgproc.COLOR_RGB2HSV);
 
         // if something is wrong, we assume there's no ball
-        if (mat.empty()) {
-            location = null;
+        if (input.empty()) {
             return input;
         }
 
-        // We create a HSV range for both colors in an if statement to decide on which team we are to detect balls
-        // NOTE: In OpenCV's implementation,
-        // Hue values are half the real value
+        
+        
+        Imgproc.resize(input,small,resolution,0,0,Imgproc.INTER_CUBIC);
 
 
-        // https://docs.opencv.org/3.4/da/d0c/tutorial_bounding_rects_circles.html
-        // Oftentimes the edges are disconnected. findContours connects these edges.
-        // We then find the bounding rectangles of those contours
+        /* Filter out non-blue pixels.  
+           Remvoing because it doesn't seem to make circle detection better
+
+        Imgproc.cvtColor(small, hls, Imgproc.COLOR_BGR2HLS);
+        Core.inRange(hls, new Scalar(80, 70, 0), new Scalar(115, 255, 255), mask);
+        combined.copySize(hls);
+        Core.bitwise_and(small,small,combined,mask);
         Mat gray = new Mat();
-        Imgproc.cvtColor(input, gray, Imgproc.COLOR_BGR2GRAY);
-        Imgproc.medianBlur(gray, gray, 5);
+        
+        */
+        //Imgproc.cvtColor(small,gray,Imgproc.COLOR_RGB2GRAY);
+        if (blue) {
+            Core.extractChannel(small,gray,2);
+        } else {
+            Core.extractChannel(small,gray,0);
+        }
+        Imgproc.medianBlur(gray, gray, 11);
         Mat circles = new Mat();
         Imgproc.HoughCircles(gray, circles, Imgproc.HOUGH_GRADIENT, 1.0,
                 (double)gray.rows()/.0000001, // change this value to detect circles with different distances to each other
-                100.0, 30.0, 20, 600); // change the last two parameters
+                100.0, 15.0, 10, 25); // change the last two parameters
                 // (min_radius & max_radius) to detect larger circles
 
 
-
+        Mat output = small;
         //Draw Circles on image
         for (int x = 0; x < circles.cols(); x++) {
             double[] c = circles.get(0, x);
             this.center = new Point(Math.round(c[0]), Math.round(c[1]));
             // circle center
-            Imgproc.circle(input, center, 1, new Scalar(0,100,100), 3, 8, 0 );
+            Imgproc.circle(small, center, 1, new Scalar(255,0,0), 3, 8, 0 );
             // circle outline
             int radius = (int) Math.round(c[2]);
-            Imgproc.circle(input, center, radius, new Scalar(255,0,255), 3, 8, 0 );
+            Imgproc.circle(small, center, radius, new Scalar(255,0,255), 3, 8, 0 );
+            //System.out.printf("Circle found: x:%d y:%d  radius:%d\n", Math.round(c[0]) , Math.round(c[1]), Math.round(c[2]) );
         }
 
 
-        // Iterate and check whether the bounding boxes
-        // cover left and/or right side of the image
-        boolean left = false; // true if regular stone found on the left side
-        boolean right = false; // "" "" on the right side
-        
 
-        // if there is no yellow regions on a side
-        // that side should be a Skystone
-        if (!left) location = SkystoneLocation.LEFT;
-        else if (!right) location = SkystoneLocation.RIGHT;
-        // if both are true, then there's no Skystone in front.
-        // since our team's camera can only detect two at a time
-        // we will need to scan the next 2 stones
-        else location = SkystoneLocation.NONE;
-
-        return input; // return the mat with rectangles drawn
+        return small; // return the mat with rectangles drawn
     }
 
-    public SkystoneLocation getLocation() {
-        return this.location;
-    }
+
 
 }

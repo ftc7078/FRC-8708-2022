@@ -1,5 +1,9 @@
 package frc.robot.vision;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Map;
+
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
@@ -9,34 +13,47 @@ import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cameraserver.CameraServerSharedStore;
 import edu.wpi.first.cscore.CvSink;
 import edu.wpi.first.cscore.CvSource;
+import edu.wpi.first.cscore.MjpegServer;
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.cscore.VideoSink;
 import edu.wpi.first.cscore.VideoMode.PixelFormat;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 
 public class MyVisionThread extends Thread {
     UsbCamera m_camera;
+    private MjpegServer m_server;
 
     public void run() {
-        
-        if (m_camera == null ) {
-            m_camera = new UsbCamera("RoboWebcam", 1);
-        }
-        
+        System.out.println("Creating new camera");
+        m_camera = new UsbCamera("Webcam",0);
+        m_camera.setVideoMode(PixelFormat.kYUYV, 640, 480, 10);
+        System.out.println("Starting capture");
+        m_server = CameraServer.startAutomaticCapture(m_camera);
+
         
 
-        CameraServer.startAutomaticCapture(m_camera);
 
         // Set the resolution
-        m_camera.setResolution(320, 240);
-        m_camera.setPixelFormat(PixelFormat.kYUYV);
-
         // Get a CvSink. This will capture Mats from the camera
         CvSink cvSink = CameraServer.getVideo();
+        
         // Setup a CvSource. This will send images back to the Dashboard
-        CvSource outputStream = CameraServer.putVideo("Circle", 640, 480);
+        CvSource outputStream = CameraServer.putVideo("Circle", 160, 120);
+
+        
+
+        //MjpegServer m_rawServer = CameraServer.addServer("serve_raw");
+        //m_rawServer.setSource(m_camera);        
+        
+        outputStream.setPixelFormat(PixelFormat.kMJPEG);
+        outputStream.setDescription("What does this do?");
+        Shuffleboard.getTab("Driving").add(outputStream).withPosition(7,0).withSize(4,4).withProperties(Map.of("Title", "fartknocker"));
+        Shuffleboard.update();
 
         // Mats are very memory expensive. Lets reuse this Mat.
         Mat mat = new Mat();
+
         BallDetector ballFinder = new BallDetector();
      
         while (!Thread.interrupted()) {
@@ -48,8 +65,23 @@ public class MyVisionThread extends Thread {
                 // skip the rest of the current iteration
                 continue;
             }
-            Mat output = ballFinder.processFrame(mat,0);
-            outputStream.putFrame(output);
+            if (true) {
+                Instant start = Instant.now();
+                
+                Mat output = ballFinder.processFrame(mat,0);
+                Instant finish1 = Instant.now();
+                outputStream.putFrame(output);
+                Instant finish2 = Instant.now();
+                
+                long findTime = Duration.between(start, finish1).toMillis();  
+                long putTime = Duration.between(finish1, finish2).toMillis(); 
+                if (findTime > 50) {
+                    System.out.println("Long find time: " + findTime );
+                } 
+                
+            } else {
+                outputStream.putFrame(mat);
+            }
         }
     }
 

@@ -6,6 +6,7 @@ package frc.robot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.cscore.HttpCamera;
@@ -31,6 +32,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardComponent;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.shuffleboard.WidgetType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -90,17 +92,40 @@ public class RobotContainer {
      * @param Map */
     public RobotContainer() {
         //Configure Shuffleboard
+
+        if ( CameraServerJNI.enumerateUsbCameras().length > 0) {
+            System.out.println("Webcam Found.  Firing up vision.");
+            m_visionThread = new MyVisionThread();
+            m_visionThread.setDaemon(true);
+            m_visionThread.start();
+            m_webcamPresent = true;
+        } else {
+            System.out.println("No webcam. No vision");
+            m_webcamPresent = false;
+        }
+        
+
         ShuffleboardTab m_drivingTab = Shuffleboard.getTab("Driving");
+        List<ShuffleboardComponent<?>> components = m_drivingTab.getComponents();
+        for (int i = 0; i < components.size(); i++) {
+            System.out.println("Already on driving tab: " + components.get(i).getTitle());
+        }
+        m_drivingTab.add("Autonomous", m_chooser)
+        .withPosition(0,0)
+        .withSize(3,1)
+        .withWidget(BuiltInWidgets.kSplitButtonChooser);
         m_drivingTab.add("Shooter Speed",m_shooter.m_shooterTargetSpeed)
             .withPosition(0,1)
             .withSize(3,3)
-            .withWidget(BuiltInWidgets.kDial);
-        m_drivingTab.add("Autonomous", m_chooser)
-            .withPosition(0,0)
-            .withSize(3,1);
-        m_drivingTab.add( new HttpCamera("limelight", "http://10.87.8.11:5800/stream.mjpg", HttpCameraKind.kMJPGStreamer))
+            .withWidget(BuiltInWidgets.kDial)
+            .withProperties(Map.of("Min",1500,"Max",5700));
+
+        m_drivingTab.add( new HttpCamera("limelight", 
+            NetworkTableInstance.getDefault().getEntry("limelight_Stream").getString("http://10.87.8.11:5800/stream.mjpg"), 
+            HttpCameraKind.kMJPGStreamer))
             .withPosition(3,0)
             .withSize(4,4);
+        Shuffleboard.update();
         // Configure the button bindings
         m_buttonStick = m_driverControllerJoystickRight;
         configureButtonBindings();
@@ -124,17 +149,7 @@ public class RobotContainer {
         m_chooser.addOption("Example Auto", this.getAutonomousCommand());
 
         
-        if ( CameraServerJNI.enumerateUsbCameras().length > 0) {
-            System.out.println("Webcam Found.  Firing up vision.");
-            m_visionThread = new MyVisionThread();
-            m_visionThread.setDaemon(true);
-            m_visionThread.start();
-            m_webcamPresent = true;
-        } else {
-            System.out.println("No webcam. No vision");
-            m_webcamPresent = false;
-        }
-        
+
     }
     
     private void configureButtonBindings() {
