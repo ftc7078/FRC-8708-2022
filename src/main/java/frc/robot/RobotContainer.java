@@ -4,15 +4,11 @@
 
 package frc.robot;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.cscore.HttpCamera;
-import edu.wpi.first.cscore.UsbCamera;
-import edu.wpi.first.cscore.UsbCameraInfo;
-import edu.wpi.first.cscore.VideoSource;
 import edu.wpi.first.cscore.HttpCamera.HttpCameraKind;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.RamseteController;
@@ -23,7 +19,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -34,14 +29,12 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardComponent;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj.shuffleboard.WidgetType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -57,6 +50,7 @@ import frc.robot.subsystems.HangerSubsystem;
 import frc.robot.subsystems.PickupSubsystem;
 import frc.robot.subsystems.ShooterSimple;
 import frc.robot.subsystems.TransferSubsystem;
+import frc.robot.vision.BallDetector;
 import frc.robot.vision.MyVisionThread;
 
 /**
@@ -67,7 +61,7 @@ import frc.robot.vision.MyVisionThread;
 */
 public class RobotContainer {
     // The robot's subsystems
-    private Thread m_visionThread;
+    private MyVisionThread m_visionThread;
     private boolean m_webcamPresent;
     final DriveSubsystemMax m_robotDrive = new DriveSubsystemMax();
     final PickupSubsystem m_pickup = new PickupSubsystem();
@@ -86,6 +80,7 @@ public class RobotContainer {
     XboxController m_manipulatorController = new XboxController(OIConstants.kManipulatorControllerPort);
     Joystick m_driverControllerJoystickLeft = new Joystick(OIConstants.kDriverControllerPort1);
     Joystick m_driverControllerJoystickRight = new Joystick(OIConstants.kDriverControllerPort2);
+    BallDetector m_ballDetector;
     
     
     /** The container for the robot. Contains subsystems, OI devices, and commands. 
@@ -98,6 +93,7 @@ public class RobotContainer {
             m_visionThread = new MyVisionThread();
             m_visionThread.setDaemon(true);
             m_visionThread.start();
+            m_ballDetector = m_visionThread.getBallDetector();
             m_webcamPresent = true;
         } else {
             System.out.println("No webcam. No vision");
@@ -111,12 +107,12 @@ public class RobotContainer {
             System.out.println("Already on driving tab: " + components.get(i).getTitle());
         }
         m_drivingTab.add("Autonomous", m_chooser)
-        .withPosition(0,0)
+        .withPosition(3,3)
         .withSize(3,1)
         .withWidget(BuiltInWidgets.kSplitButtonChooser);
         m_drivingTab.add("Shooter Speed",m_shooter.m_shooterTargetSpeed)
-            .withPosition(0,1)
-            .withSize(3,3)
+            .withPosition(0,0)
+            .withSize(2,3)
             .withWidget(BuiltInWidgets.kDial)
             .withProperties(Map.of("Min",1500,"Max",5700));
 
@@ -124,7 +120,7 @@ public class RobotContainer {
             NetworkTableInstance.getDefault().getEntry("limelight_Stream").getString("http://10.87.8.11:5800/stream.mjpg"), 
             HttpCameraKind.kMJPGStreamer))
             .withPosition(3,0)
-            .withSize(4,4);
+            .withSize(3,3);
         Shuffleboard.update();
         // Configure the button bindings
         m_buttonStick = m_driverControllerJoystickRight;

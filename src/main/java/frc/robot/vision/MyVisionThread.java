@@ -23,6 +23,8 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 public class MyVisionThread extends Thread {
     UsbCamera m_camera;
     private MjpegServer m_server;
+    BallDetector ballFinder = new BallDetector();
+
 
     public void run() {
         System.out.println("Creating new camera");
@@ -30,9 +32,6 @@ public class MyVisionThread extends Thread {
         m_camera.setVideoMode(PixelFormat.kYUYV, 640, 480, 10);
         System.out.println("Starting capture");
         m_server = CameraServer.startAutomaticCapture(m_camera);
-
-        
-
 
         // Set the resolution
         // Get a CvSink. This will capture Mats from the camera
@@ -54,7 +53,6 @@ public class MyVisionThread extends Thread {
         // Mats are very memory expensive. Lets reuse this Mat.
         Mat mat = new Mat();
 
-        BallDetector ballFinder = new BallDetector();
      
         while (!Thread.interrupted()) {
             // Tell the CvSink to grab a frame from the camera and put it
@@ -83,6 +81,9 @@ public class MyVisionThread extends Thread {
                 outputStream.putFrame(mat);
             }
         }
+    }
+    public BallDetector getBallDetector() {
+        return ballFinder;
     }
 
 }

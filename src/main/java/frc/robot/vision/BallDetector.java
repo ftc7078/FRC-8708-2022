@@ -18,7 +18,7 @@ import java.awt.Robot;
 
 public class BallDetector {
  
-    private Point center = new Point(0, 0);
+    private Point center = new Point(80, 60);
 
     /**
      *
@@ -73,15 +73,15 @@ public class BallDetector {
         */
         //Imgproc.cvtColor(small,gray,Imgproc.COLOR_RGB2GRAY);
         if (blue) {
-            Core.extractChannel(small,gray,2);
-        } else {
             Core.extractChannel(small,gray,0);
+        } else {
+            Core.extractChannel(small,gray,1);
         }
         Imgproc.medianBlur(gray, gray, 11);
         Mat circles = new Mat();
         Imgproc.HoughCircles(gray, circles, Imgproc.HOUGH_GRADIENT, 1.0,
                 (double)gray.rows()/.0000001, // change this value to detect circles with different distances to each other
-                100.0, 15.0, 10, 25); // change the last two parameters
+                100.0, 15.0, 10, 20); // change the last two parameters
                 // (min_radius & max_radius) to detect larger circles
 
 
@@ -101,6 +101,15 @@ public class BallDetector {
 
 
         return small; // return the mat with rectangles drawn
+    }
+    public synchronized void setCenter(int x,int y) {
+        center.x = x;
+        center.y = y;
+
+    } 
+
+    public synchronized Point getCenter() {
+        return new Point(center.x, center.y);
     }
 
 
