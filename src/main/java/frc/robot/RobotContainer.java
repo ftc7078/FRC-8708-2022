@@ -153,10 +153,11 @@ public class RobotContainer {
         new JoystickButton(m_buttonStick,3).whenPressed(
             new TurnToTarget(m_robotDrive));
         new JoystickButton(m_manipulatorController, Button.kA.value).whenPressed(
+                new InstantCommand(m_lights::purple).andThen(
                 new InstantCommand(m_pickup::run, m_pickup).andThen(
                 new InstantCommand(m_transfer::run, m_transfer),
                 new InstantCommand(m_shooter::runFeederBackwards, m_shooter)
-        ));
+        )));
         new JoystickButton(m_manipulatorController, Button.kA.value).whenReleased(
             new InstantCommand(m_pickup::stop, m_pickup).andThen(
             new InstantCommand(m_transfer::stop, m_transfer),
