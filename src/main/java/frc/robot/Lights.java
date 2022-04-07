@@ -18,7 +18,7 @@ public class Lights {
   PWMMotorController controller;
 
   public Lights() {
-    controller = new Spark(0);
+    controller = new Spark(9);
 
   }
  
@@ -27,9 +27,14 @@ public class Lights {
   }
 
   public void purple(){
+    System.out.println("PURPLE!!!!!!!!!!!!");
     controller.set(0.91);
   }
   
+  public void orangechase(){
+    controller.set(0.01);
+    //unfinished chaser code - matt
+  }
 
 
 }
