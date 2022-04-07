@@ -68,6 +68,7 @@ public class RobotContainer {
     final HangerSubsystem m_hook = new HangerSubsystem();
     final ShooterSimple m_shooter = new ShooterSimple();
     final TransferSubsystem m_transfer = new TransferSubsystem();
+    final Lights m_lights = new Lights();
     Joystick m_buttonStick;
     
     NetworkTable m_limelightTable = NetworkTableInstance.getDefault().getTable("limelight");
@@ -99,7 +100,8 @@ public class RobotContainer {
             System.out.println("No webcam. No vision");
             m_webcamPresent = false;
         }
-        
+        //m_lights.rainbow();
+        m_lights.purple();
 
         ShuffleboardTab m_drivingTab = Shuffleboard.getTab("Driving");
         List<ShuffleboardComponent<?>> components = m_drivingTab.getComponents();
