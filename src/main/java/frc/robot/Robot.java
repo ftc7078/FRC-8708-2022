@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import frc.robot.commands.Stop;
 import frc.robot.commands.TurnToAngle;
 
 /**
@@ -41,14 +42,12 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Angle",90);
     SmartDashboard.updateValues();
     */
-<<<<<<< Updated upstream
 
-=======
     SmartDashboard.putNumber("Lights", 0);
     SmartDashboard.updateValues();
-    
->>>>>>> Stashed changes
     m_robotContainer = new RobotContainer();
+    m_robotContainer.setupDefaultStopped();
+
   }
 
   /**
@@ -90,7 +89,7 @@ public class Robot extends TimedRobot {
     //double angle = SmartDashboard.getNumber("Angle",90);
     //System.out.println("kp" + m_robotContainer.m_robotDrive.kp);
     //m_autonomousCommand = new TurnToAngle(angle,m_robotContainer.m_robotDrive);
-
+    m_robotContainer.setupDefaultStopped();
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
     m_robotContainer.m_robotDrive.resetEncoders();
     m_robotContainer.m_robotDrive.resetGyro();
@@ -117,6 +116,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
+    m_robotContainer.setupJoystickControll();
     m_robotContainer.m_shooter.stopFeeder();
     m_robotContainer.m_shooter.stopFlywheel();
     m_robotContainer.m_pickup.pickupUp();

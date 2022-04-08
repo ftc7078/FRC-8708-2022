@@ -43,12 +43,9 @@ import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.ShooterConstants;
-<<<<<<< Updated upstream
 import frc.robot.commands.MoreBallsTest;
-=======
+import frc.robot.commands.Stop;
 import frc.robot.commands.MoreBallsAuto;
-import frc.robot.commands.SequentialTest;
->>>>>>> Stashed changes
 import frc.robot.commands.TurnToAngle;
 import frc.robot.commands.TurnToTarget;
 import frc.robot.subsystems.DriveSubsystemMax;
@@ -101,8 +98,8 @@ public class RobotContainer {
             m_visionThread.setDaemon(true);
             
 
-            m_visionThread.start();
-            m_webcamPresent = true;
+            //m_visionThread.start();
+            //m_webcamPresent = true;
         } else {
             System.out.println("No webcam. No vision");
             m_webcamPresent = false;
@@ -113,10 +110,7 @@ public class RobotContainer {
         for (int i = 0; i < components.size(); i++) {
             System.out.println("Already on driving tab: " + components.get(i).getTitle());
         }
-        m_drivingTab.add("Autonomous", m_chooser)
-        .withPosition(2,2)
-        .withSize(3,1)
-        .withWidget(BuiltInWidgets.kSplitButtonChooser);
+
         m_drivingTab.add("Shooter Speed",m_shooter.m_shooterTargetSpeed)
             .withPosition(0,0)
             .withSize(2,4)
@@ -127,8 +121,9 @@ public class RobotContainer {
             NetworkTableInstance.getDefault().getEntry("limelight_Stream").getString("http://10.87.8.11:5800/stream.mjpg"), 
             HttpCameraKind.kMJPGStreamer))
             .withPosition(2,0)
-            .withSize(2,2);
-       
+            .withSize(3,3);
+
+
         Shuffleboard.update();
         // Configure the button bindings
         m_buttonStick = m_driverControllerJoystickRight;
@@ -137,27 +132,18 @@ public class RobotContainer {
         // Configure default commands
         // Set the default drive command to split-stick arcade drive
         
-        m_robotDrive.setDefaultCommand(
-        // A split-stick arcade command, with forward/backward controlled by the left
-        // hand, and turning controlled by the right.
-        new RunCommand(
-        () ->
-        m_robotDrive.tankDrive(
-        m_driverControllerJoystickLeft.getY(), m_driverControllerJoystickRight.getY(),
-        m_buttonStick.getTrigger(), m_buttonStick.getRawButton(2)),
-        m_robotDrive));
+
+
 
 
         m_chooser.setDefaultOption("Back and Shoot", m_backAndShoot);
-<<<<<<< Updated upstream
-        m_chooser.addOption("More Balls", new MoreBallsTest(m_robotDrive, m_shooter, m_transfer, m_pickup) );
-=======
-        m_chooser.addOption("Test", new SequentialTest(m_robotDrive));
+        m_chooser.addOption("More Balls Test", new MoreBallsTest(m_robotDrive, m_shooter, m_transfer, m_pickup) );
+
         m_chooser.addOption("More Balls", new MoreBallsAuto(m_robotDrive, m_shooter, m_transfer, m_pickup) );
->>>>>>> Stashed changes
-
-        
-
+        m_drivingTab.add("Autonomous", m_chooser)
+            .withPosition(2,3)
+            .withSize(3,1)
+            .withWidget(BuiltInWidgets.kSplitButtonChooser);
     }
     
     private void configureButtonBindings() {
@@ -257,6 +243,23 @@ new InstantCommand(m_pickup::pickupDown)
     * @return the command to run in autonomous
     */
     
+    public void setupJoystickControll() {
+        m_robotDrive.setDefaultCommand(
+            // A split-stick arcade command, with forward/backward controlled by the left
+            // hand, and turning controlled by the right.
+            new RunCommand(
+            () ->
+            m_robotDrive.tankDrive(
+            m_driverControllerJoystickLeft.getY(), m_driverControllerJoystickRight.getY(),
+            m_buttonStick.getTrigger(), m_buttonStick.getRawButton(2)),
+            m_robotDrive));
+    }
+
+
+    public void setupDefaultStopped() {
+        m_robotDrive.setDefaultCommand(new Stop(m_robotDrive,0));
+    }
+
 
     public Command getAutonomousCommand() {
         return m_chooser.getSelected();

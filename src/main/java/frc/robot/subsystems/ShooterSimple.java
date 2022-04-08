@@ -190,6 +190,7 @@ public void lowSpeed() {
   }
 
   public void disable() {
+    System.out.println("Stopping feeder and flywheel");
     stopFeeder();
     stopFlywheel();
   }
