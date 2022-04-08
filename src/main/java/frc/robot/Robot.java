@@ -41,7 +41,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Angle",90);
     SmartDashboard.updateValues();
     */
-    
+
     m_robotContainer = new RobotContainer();
   }
 
@@ -97,6 +97,7 @@ public class Robot extends TimedRobot {
      */
 
     // schedule the autonomous command (example)
+    System.out.println("Starting Autonomous Command Now" + m_autonomousCommand);
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
     }

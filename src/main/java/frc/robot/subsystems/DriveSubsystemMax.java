@@ -200,6 +200,10 @@ public class DriveSubsystemMax extends SubsystemBase {
     m_drive.arcadeDrive(fwd, rot);
   }
   
+  public void moveStraight(double speed){
+    tankDrive(speed,speed);
+  }
+  
   public void forward() {
     tankDrive(-0.5, -0.5);
   }
