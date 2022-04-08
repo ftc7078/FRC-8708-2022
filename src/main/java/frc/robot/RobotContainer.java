@@ -43,6 +43,7 @@ import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.ShooterConstants;
+import frc.robot.commands.MoreBallsTest;
 import frc.robot.commands.TurnToAngle;
 import frc.robot.commands.TurnToTarget;
 import frc.robot.subsystems.DriveSubsystemMax;
@@ -143,7 +144,7 @@ public class RobotContainer {
 
 
         m_chooser.setDefaultOption("Back and Shoot", m_backAndShoot);
-        m_chooser.addOption("More Balls", moreBallsAuto());
+        m_chooser.addOption("More Balls", new MoreBallsTest(m_robotDrive, m_shooter, m_transfer, m_pickup) );
 
         
 

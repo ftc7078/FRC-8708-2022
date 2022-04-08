@@ -56,7 +56,6 @@ public class ShooterSimple extends SubsystemBase  {
     m_pidController.setOutputRange(kMinOutput, kMaxOutput);
     
     // display PID coefficients on SmartDashboard
-    /*
     SmartDashboard.putNumber("P Gain", kP);
     SmartDashboard.putNumber("I Gain", kI);
     SmartDashboard.putNumber("D Gain", kD);
@@ -64,7 +63,6 @@ public class ShooterSimple extends SubsystemBase  {
     SmartDashboard.putNumber("Feed Forward", kFF);
     SmartDashboard.putNumber("Max Output", kMaxOutput);
     SmartDashboard.putNumber("Min Output", kMinOutput);
-    */
     m_feederMotor.setInverted(true);
   }
   
@@ -74,8 +72,7 @@ public class ShooterSimple extends SubsystemBase  {
   }
 
   public void setShooter(double speed) {
-      /*/ read PID coefficients from SmartDashboard
-
+      // read PID coefficients from SmartDashboard
       double p = SmartDashboard.getNumber("P Gain", 0);
       double i = SmartDashboard.getNumber("I Gain", 0);
       double d = SmartDashboard.getNumber("D Gain", 0);
@@ -90,12 +87,10 @@ public class ShooterSimple extends SubsystemBase  {
       if((d != kD)) { m_pidController.setD(d); kD = d; }
       if((iz != kIz)) { m_pidController.setIZone(iz); kIz = iz; }
       if((ff != kFF)) { m_pidController.setFF(ff); kFF = ff; }
-      
       if((max != kMaxOutput) || (min != kMinOutput)) { 
         m_pidController.setOutputRange(min, max); 
         kMinOutput = min; kMaxOutput = max; 
       }
-      */
   
       /**
        * PIDController objects are commanded to a set point using the 
@@ -115,18 +110,16 @@ public class ShooterSimple extends SubsystemBase  {
 
       m_pidController.setReference(setPoint, CANSparkMax.ControlType.kVelocity);
       
-      /*
       SmartDashboard.putNumber("Speed from controler", speed);
       SmartDashboard.putNumber("SetPoint", setPoint);
       SmartDashboard.putNumber("Applied Output", m_shooterMotor.getAppliedOutput());      
       SmartDashboard.putNumber("ProcessVariable", m_encoder.getVelocity());
-      */
   }
 
   public void setRPM(double rpm) {
     m_rpm=rpm;
     m_pidController.setReference(m_rpm, CANSparkMax.ControlType.kVelocity);
-    //SmartDashboard.putNumber("SetPoint", m_rpm*3);
+    SmartDashboard.putNumber("SetPoint", m_rpm*3);
   }
   
 
@@ -142,13 +135,9 @@ public class ShooterSimple extends SubsystemBase  {
 
   public void setTargetSpeed(double targetSpeed) {
     m_shooterTargetSpeed=targetSpeed;
-    SmartDashboard.putNumber("Shooter Target Speed", m_shooterTargetSpeed);
-
   }
 public void lowSpeed() {
   m_shooterTargetSpeed = 1500;
-  SmartDashboard.putNumber("Shooter Target Speed", m_shooterTargetSpeed);
-
 }
 
   public void autoSpeed() {
