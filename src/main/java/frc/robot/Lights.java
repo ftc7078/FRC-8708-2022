@@ -36,5 +36,9 @@ public class Lights {
     //unfinished chaser code - matt
   }
 
+  public void setLights(double in) {
+    controller.set(in);
+  }
+
 
 }

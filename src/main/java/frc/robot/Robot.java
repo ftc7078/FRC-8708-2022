@@ -41,7 +41,13 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Angle",90);
     SmartDashboard.updateValues();
     */
+<<<<<<< Updated upstream
 
+=======
+    SmartDashboard.putNumber("Lights", 0);
+    SmartDashboard.updateValues();
+    
+>>>>>>> Stashed changes
     m_robotContainer = new RobotContainer();
   }
 
@@ -70,7 +76,9 @@ public class Robot extends TimedRobot {
   public void disabledInit() {}
 
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+    m_robotContainer.m_visionThread.getCenter();
+  }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
@@ -109,6 +117,9 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
+    m_robotContainer.m_shooter.stopFeeder();
+    m_robotContainer.m_shooter.stopFlywheel();
+    m_robotContainer.m_pickup.pickupUp();
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
@@ -120,7 +131,10 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    m_robotContainer.m_lights.setLights( SmartDashboard.getNumber("Lights",0));
+    SmartDashboard.updateValues();
+  }
 
   @Override
   public void testInit() {

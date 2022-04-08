@@ -18,24 +18,32 @@ public class PickupSubsystem extends SubsystemBase {
         CANSparkMax m_motor = new CANSparkMax(Constants.kPickupMotor ,MotorType.kBrushed);
         
         public PickupSubsystem() { 
+
             m_arm.set(Value.kReverse);
             
         }
 
         public void armDown() {
+            System.out.println("armDown");
             m_arm.set(Value.kForward);
 
         }
 
         public void armUp() {
+            System.out.println("armUp");
+
             m_arm.set(Value.kReverse);
         }
 
         public void runMotor() {
+            System.out.println("runMotor");
+
             m_motor.set(1);
         }
 
         public void stopMotor() {
+            System.out.println("stopMotor");
+
             m_motor.set(0);
         }
 

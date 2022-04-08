@@ -43,7 +43,12 @@ import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.ShooterConstants;
+<<<<<<< Updated upstream
 import frc.robot.commands.MoreBallsTest;
+=======
+import frc.robot.commands.MoreBallsAuto;
+import frc.robot.commands.SequentialTest;
+>>>>>>> Stashed changes
 import frc.robot.commands.TurnToAngle;
 import frc.robot.commands.TurnToTarget;
 import frc.robot.subsystems.DriveSubsystemMax;
@@ -62,7 +67,7 @@ import frc.robot.vision.MyVisionThread;
 */
 public class RobotContainer {
     // The robot's subsystems
-    private MyVisionThread m_visionThread;
+    MyVisionThread m_visionThread;
     private boolean m_webcamPresent;
     final DriveSubsystemMax m_robotDrive = new DriveSubsystemMax();
     final PickupSubsystem m_pickup = new PickupSubsystem();
@@ -94,15 +99,14 @@ public class RobotContainer {
             System.out.println("Webcam Found.  Firing up vision.");
             m_visionThread = new MyVisionThread();
             m_visionThread.setDaemon(true);
+            
+
             m_visionThread.start();
-            m_ballDetector = m_visionThread.getBallDetector();
             m_webcamPresent = true;
         } else {
             System.out.println("No webcam. No vision");
             m_webcamPresent = false;
         }
-        //m_lights.rainbow();
-        m_lights.purple();
 
         ShuffleboardTab m_drivingTab = Shuffleboard.getTab("Driving");
         List<ShuffleboardComponent<?>> components = m_drivingTab.getComponents();
@@ -110,20 +114,21 @@ public class RobotContainer {
             System.out.println("Already on driving tab: " + components.get(i).getTitle());
         }
         m_drivingTab.add("Autonomous", m_chooser)
-        .withPosition(3,3)
+        .withPosition(2,2)
         .withSize(3,1)
         .withWidget(BuiltInWidgets.kSplitButtonChooser);
         m_drivingTab.add("Shooter Speed",m_shooter.m_shooterTargetSpeed)
             .withPosition(0,0)
-            .withSize(2,3)
+            .withSize(2,4)
             .withWidget(BuiltInWidgets.kDial)
             .withProperties(Map.of("Min",1500,"Max",5700));
 
         m_drivingTab.add( new HttpCamera("limelight", 
             NetworkTableInstance.getDefault().getEntry("limelight_Stream").getString("http://10.87.8.11:5800/stream.mjpg"), 
             HttpCameraKind.kMJPGStreamer))
-            .withPosition(3,0)
-            .withSize(3,3);
+            .withPosition(2,0)
+            .withSize(2,2);
+       
         Shuffleboard.update();
         // Configure the button bindings
         m_buttonStick = m_driverControllerJoystickRight;
@@ -144,7 +149,12 @@ public class RobotContainer {
 
 
         m_chooser.setDefaultOption("Back and Shoot", m_backAndShoot);
+<<<<<<< Updated upstream
         m_chooser.addOption("More Balls", new MoreBallsTest(m_robotDrive, m_shooter, m_transfer, m_pickup) );
+=======
+        m_chooser.addOption("Test", new SequentialTest(m_robotDrive));
+        m_chooser.addOption("More Balls", new MoreBallsAuto(m_robotDrive, m_shooter, m_transfer, m_pickup) );
+>>>>>>> Stashed changes
 
         
 
@@ -298,6 +308,7 @@ new InstantCommand(m_pickup::pickupDown)
                 return ramseteCommand.andThen(() -> m_robotDrive.tankDriveVolts(0, 0));
          
     }
+    /*
     public Command moreBallsAuto() {
         // Start the command by spinning up the shooter...
     return new  ParallelDeadlineGroup(
@@ -324,12 +335,7 @@ new InstantCommand(m_pickup::pickupDown)
               m_shooter.stopFeeder();
             }));
 
-    /**
-    * Use this to pass the autonomous command to the main {@link Robot} class.
-    *
-    * @return the command to run in autonomous
-    */
-    //Progamer moves
-    }
+
+    }*/
     
 }

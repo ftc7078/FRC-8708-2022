@@ -205,6 +205,10 @@ public class DriveSubsystemMax extends SubsystemBase {
   }
   
   public void forward() {
+    tankDrive(0.5, 0.5);
+  }
+
+  public void backward() {
     tankDrive(-0.5, -0.5);
   }
   

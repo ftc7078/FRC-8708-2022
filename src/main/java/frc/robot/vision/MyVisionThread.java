@@ -23,7 +23,8 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 public class MyVisionThread extends Thread {
     UsbCamera m_camera;
     private MjpegServer m_server;
-    BallDetector ballFinder = new BallDetector();
+
+    Point m_center;
 
 
     public void run() {
@@ -32,6 +33,7 @@ public class MyVisionThread extends Thread {
         m_camera.setVideoMode(PixelFormat.kYUYV, 640, 480, 10);
         System.out.println("Starting capture");
         m_server = CameraServer.startAutomaticCapture(m_camera);
+  
 
         // Set the resolution
         // Get a CvSink. This will capture Mats from the camera
@@ -47,12 +49,12 @@ public class MyVisionThread extends Thread {
         
         outputStream.setPixelFormat(PixelFormat.kMJPEG);
         outputStream.setDescription("What does this do?");
-        Shuffleboard.getTab("Driving").add(outputStream).withPosition(7,0).withSize(4,4).withProperties(Map.of("Title", "fartknocker"));
+        Shuffleboard.getTab("Driving").add(outputStream).withPosition(5,0).withSize(4,4).withProperties(Map.of("Title", "fartknocker"));
         Shuffleboard.update();
 
         // Mats are very memory expensive. Lets reuse this Mat.
         Mat mat = new Mat();
-
+        BallDetector ballFinder = new BallDetector();
      
         while (!Thread.interrupted()) {
             // Tell the CvSink to grab a frame from the camera and put it
@@ -67,6 +69,7 @@ public class MyVisionThread extends Thread {
                 Instant start = Instant.now();
                 
                 Mat output = ballFinder.processFrame(mat,0);
+                setCenter(ballFinder.center);
                 Instant finish1 = Instant.now();
                 outputStream.putFrame(output);
                 Instant finish2 = Instant.now();
@@ -82,8 +85,15 @@ public class MyVisionThread extends Thread {
             }
         }
     }
-    public BallDetector getBallDetector() {
-        return ballFinder;
+    public  void setCenter(Point center) {
+        m_center = center;
+
+    } 
+
+    public  Point getCenter() {
+        return m_center;
     }
+
+
 
 }

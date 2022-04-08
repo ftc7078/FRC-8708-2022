@@ -18,7 +18,7 @@ import java.awt.Robot;
 
 public class BallDetector {
  
-    private Point center = new Point(80, 60);
+    Point center = new Point(80, 60);
 
     /**
      *
@@ -102,15 +102,7 @@ public class BallDetector {
 
         return small; // return the mat with rectangles drawn
     }
-    public synchronized void setCenter(int x,int y) {
-        center.x = x;
-        center.y = y;
 
-    } 
-
-    public synchronized Point getCenter() {
-        return new Point(center.x, center.y);
-    }
 
 
 

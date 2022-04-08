@@ -127,6 +127,7 @@ public class ShooterSimple extends SubsystemBase  {
     m_shooterTargetSpeed = Math.floorDiv((int)m_shooterTargetSpeed - speedStepSize, speedStepSize) * speedStepSize;
     SmartDashboard.putNumber("Shooter Target Speed", m_shooterTargetSpeed);
   }
+  
 
   public void faster() {
     m_shooterTargetSpeed = Math.floorDiv((int)m_shooterTargetSpeed + speedStepSize, speedStepSize) * speedStepSize;
@@ -189,8 +190,8 @@ public void lowSpeed() {
   }
 
   public void disable() {
-    setRPM(0);
     stopFeeder();
+    stopFlywheel();
   }
 
   
