@@ -93,6 +93,7 @@ public class RobotContainer {
             
 
             m_visionThread.start();
+            m_visionThread.setPriority(Thread.NORM_PRIORITY-2);
             m_webcamPresent = true;
         } else {
             System.out.println("No webcam. No vision");

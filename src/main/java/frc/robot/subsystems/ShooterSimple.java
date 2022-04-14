@@ -151,27 +151,42 @@ public void lowSpeed() {
     //Get the distance from the goal by looking at the area the reflector takes up and doing some math that is roughly right
     //Multiply the distance in feet by a number and add to a base rpm to get an approximation of how fast to run the shooter wheel.
     NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
-    NetworkTableEntry ta = table.getEntry("ta");
     //System.out.println("Autotarget triggered.  ta:" + table.getEntry("ta").getDouble(0) + 
     //  " tx:" + table.getEntry("tx").getDouble(0) +
     //  " tz:" + table.getEntry("tz").getDouble(0)
     //);
-    double thor = table.getEntry("thor").getDouble(0);
-    System.out.println("Thor: " + thor + " ty:" + table.getEntry("ty").getDouble(0) );
-    if (thor > 0) {
-      //math here
-      double distance = 500/thor;
-      SmartDashboard.putNumber("thor", thor);
-      SmartDashboard.putNumber("Distance", distance );
-      SmartDashboard.updateValues();
-      double targetSpeed = (ShooterConstants.kShooterBaseRPM+distance*ShooterConstants.kShooterRPMIncreasePerFoot);
-      System.out.println("Thor: " + thor + "speed: " + targetSpeed);
-      setTargetSpeed(targetSpeed);
+    if (false) {//stupid old thor method
+      NetworkTableEntry ta = table.getEntry("ta");
+      double thor = table.getEntry("thor").getDouble(0);
+      System.out.println("Thor: " + thor + " ty:" + table.getEntry("ty").getDouble(0) );
+      if (thor > 0) {
+        //math here
+        double distance = 500/thor;
+        SmartDashboard.putNumber("thor", thor);
+        SmartDashboard.putNumber("Distance", distance );
+        SmartDashboard.updateValues();
+        double targetSpeed = (ShooterConstants.kShooterBaseRPM+distance*ShooterConstants.kShooterRPMIncreasePerFoot);
+        System.out.println("Thor: " + thor + "speed: " + targetSpeed);
+        setTargetSpeed(targetSpeed);
+      } else {
+        SmartDashboard.putString("Distance", "Not Found" );
+        SmartDashboard.updateValues();
+        m_shooterTargetSpeed = ShooterConstants.kShooterDefaultRPM;
+      }
     } else {
-      SmartDashboard.putString("Distance", "Not Found" );
-      SmartDashboard.updateValues();
-      m_shooterTargetSpeed = ShooterConstants.kShooterDefaultRPM;
+      double angle = table.getEntry("ty").getDouble(-100);
+      if (angle > -100) {
+        double distance = 6/Math.tan(Math.toRadians(angle+30));
+        SmartDashboard.putNumber("Angle", angle );
+        SmartDashboard.putNumber("Distance", distance );
+        double targetSpeed = (ShooterConstants.kShooterBaseRPM+distance*ShooterConstants.kShooterRPMIncreasePerFoot);
+        setTargetSpeed(targetSpeed);
 
+      } else {
+        SmartDashboard.putString("Angle", "Nope" );
+        SmartDashboard.putString("Distance", "Nope" );
+        setTargetSpeed(ShooterConstants.kShooterDefaultRPM);
+      }
     }
     /*
     if (ta.getDouble(0) > 0) {

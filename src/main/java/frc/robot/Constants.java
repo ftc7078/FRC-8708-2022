@@ -53,6 +53,7 @@ public final class Constants {
     public static double kPDriveVel = 0.1;
     public static double kTurnToleranceDeg = 3;
     public static double kTurnRateToleranceDegPerS = 3;
+    public static double turnTimeout = 1;
     
   }
   

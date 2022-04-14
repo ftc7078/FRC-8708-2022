@@ -1,6 +1,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.subsystems.DriveSubsystemMax;
 import edu.wpi.first.wpilibj2.command.PIDCommand;
@@ -14,6 +15,7 @@ public class TurnToTarget extends PIDCommand {
    * @param drive The drive subsystem to use
    */
   DriveSubsystemMax m_drive;
+  Timer timer = new Timer();
   public TurnToTarget(DriveSubsystemMax drive) {
     super(
         new PIDController(drive.kp, drive.ki, drive.kd),
@@ -39,11 +41,17 @@ public class TurnToTarget extends PIDCommand {
     super.initialize();
     System.out.println("TurnToAngle called  " + m_setpoint + ":" + m_drive.getHeading());
     m_drive.setupAutoTargetAngle();
+    timer.reset();
+    timer.start();
   }
 
   @Override
   public boolean isFinished() {
     // End when the controller is at the reference.
+    if (timer.get() > DriveConstants.turnTimeout) {
+      return true;
+    }
     return getController().atSetpoint();
+
   }
 }
