@@ -17,43 +17,26 @@ import frc.robot.subsystems.PickupSubsystem;
 import frc.robot.subsystems.ShooterSimple;
 import frc.robot.subsystems.TransferSubsystem;
 
-public class MoreBallsAuto extends SequentialCommandGroup {
+public class TwoBallAuto extends SequentialCommandGroup {
 
-  public MoreBallsAuto(DriveSubsystemMax m_robotDrive, ShooterSimple m_shooter, 
+  public TwoBallAuto(DriveSubsystemMax m_robotDrive, ShooterSimple m_shooter, 
   TransferSubsystem m_transfer, PickupSubsystem m_pickup ) {
       addCommands(new InstantCommand(m_shooter::startFlywheel,m_shooter));
       addCommands(new InstantCommand(m_pickup::armDown, m_pickup));
       addCommands(new InstantCommand(m_pickup::run, m_pickup));
       addCommands(new InstantCommand(m_transfer::run, m_transfer));
       addCommands(new InstantCommand(m_shooter::runFeederBackwards,m_shooter));
-      addCommands(new MoveStraight(-0.8, 1.6, m_robotDrive));
+      addCommands(new MoveStraight(-0.65, 1.6, m_robotDrive));
+      addCommands(new TurnToTarget(m_robotDrive));
+      addCommands(new WaitCommand(2));
 
       addCommands(new InstantCommand(m_pickup::stop, m_pickup));
       addCommands(new InstantCommand(m_shooter::stopFeeder, m_shooter));
       addCommands(new InstantCommand(m_transfer::stop, m_transfer));
-
-      addCommands(new Shoot(m_shooter,m_transfer) );
-
-      addCommands(new TurnToAngle(10,m_robotDrive).withTimeout(2));
-
-      addCommands(new InstantCommand(m_pickup::run, m_pickup));
-      addCommands(new InstantCommand(m_transfer::run, m_transfer));
-      addCommands(new InstantCommand(m_shooter::runFeederBackwards,m_shooter));
-
-
-      addCommands(new MoveStraight(-0.8, 1.6, m_robotDrive));
-
-      addCommands(new WaitCommand(5));
       addCommands(new InstantCommand(m_pickup::armUp, m_pickup));
-      addCommands(new InstantCommand(m_pickup::stop, m_pickup));
-      addCommands(new InstantCommand(m_transfer::stop, m_transfer));
-      addCommands(new InstantCommand(m_shooter::stopFeeder, m_shooter));
 
-      
-      addCommands(new MoveStraight(0.8, 1.6, m_robotDrive));
-      addCommands(new TurnToTarget(m_robotDrive).withTimeout(2));
-      addCommands(new Shoot(m_shooter,m_transfer) );
-      addCommands(new InstantCommand(m_transfer::stop, m_transfer));     
+      addCommands(new InstantCommand(m_shooter::twoBallRPM, m_shooter));
+      addCommands(new Shoot(m_shooter,m_transfer) );  
   }
 
 

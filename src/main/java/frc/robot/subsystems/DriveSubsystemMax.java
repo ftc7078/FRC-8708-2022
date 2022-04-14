@@ -201,7 +201,8 @@ public class DriveSubsystemMax extends SubsystemBase {
   }
   
   public void moveStraight(double speed){
-    tankDrive(speed,speed);
+    //Add 10% to left because it's slower.
+    tankDrive(speed*1.1,speed);
   }
   
   public void forward() {

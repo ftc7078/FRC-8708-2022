@@ -12,7 +12,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import frc.robot.commands.Stop;
+import frc.robot.Constants.ShooterConstants;
+import frc.robot.commands.AutoRetractHanger;
 import frc.robot.commands.TurnToAngle;
 
 /**
@@ -66,17 +67,23 @@ public class Robot extends TimedRobot {
 
 
     CommandScheduler.getInstance().run();
+    SmartDashboard.putNumber("Shooter Speed", m_robotContainer.m_shooter.m_shooterTargetSpeed);
+
     SmartDashboard.updateValues();
 
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    System.out.println("Retracting hook");
+    m_robotContainer.m_hook.retract();
+  }
 
   @Override
   public void disabledPeriodic() {
     m_robotContainer.m_visionThread.getCenter();
+
   }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
@@ -93,7 +100,7 @@ public class Robot extends TimedRobot {
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
     m_robotContainer.m_robotDrive.resetEncoders();
     m_robotContainer.m_robotDrive.resetGyro();
-    m_robotContainer.m_shooter.setTargetSpeed(3800);
+    m_robotContainer.m_shooter.setTargetSpeed(ShooterConstants.kTwoBallRPM);
  
     //m_robotContainer.m_robotDrive.setDefaultCommand( new InstantCommand( () -> {}, m_robotContainer.m_robotDrive));
     /*
@@ -132,6 +139,7 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
+    m_robotContainer.updateShooterSpeed();
     m_robotContainer.m_lights.setLights( SmartDashboard.getNumber("Lights",0));
     SmartDashboard.updateValues();
   }

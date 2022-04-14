@@ -51,15 +51,16 @@ public final class Constants {
     public static double kd = 0.0019;
 
     public static double kPDriveVel = 0.1;
-    public static double kTurnToleranceDeg = 6;
+    public static double kTurnToleranceDeg = 3;
     public static double kTurnRateToleranceDegPerS = 3;
     
   }
   
   public static final class ShooterConstants {
-    public static int kShooterBaseRPM = 3700;
-    public static double kShooterRPMIncreasePerFoot = 40 ;
-      
+    public static double kTwoBallRPM = 4300;
+    public static int kShooterBaseRPM = 2500;
+    public static double kShooterRPMIncreasePerFoot = 160;
+    public static double kShooterDefaultRPM = 3800;
     public static final double kSVolts = 0.05;
     public static final boolean kEncoderReversed = false;
     
@@ -68,9 +69,9 @@ public final class Constants {
     
     public static final double kShooterFreeRPS = 5300;
     public static final double kShooterTargetRPS = 4000;
-    public static final double kShooterToleranceRPM = 250;
-    public static final double kShootTimeSeconds = 2;
-    public static final double kShootTimeoutSeconds = 5;
+    public static final double kShooterToleranceRPM = 50;
+    public static final double kShootTimeSeconds = 4;
+    public static final double kShootTimeoutSeconds = 7;
     
    
     public static final double kVVoltSecondsPerRotation =

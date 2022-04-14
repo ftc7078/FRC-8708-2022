@@ -21,6 +21,10 @@ public class Lights {
     controller = new Spark(9);
 
   }
+
+  public void defaultColor() {
+    controller.set(0.65);
+  }
  
   public void rainbow() {
     controller.set(-0.99);

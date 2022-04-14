@@ -17,6 +17,7 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.Constants.ShooterConstants;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
@@ -31,6 +32,7 @@ public class ShooterSimple extends SubsystemBase  {
   private final RelativeEncoder m_encoder = m_shooterMotor.getEncoder();
   public double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput, maxRPM, m_rpm, m_shooterTargetSpeed;
   public int speedStepSize = 100;
+  private Timer m_timer = new Timer();
   
   public ShooterSimple() {
     m_shooterMotor.restoreFactoryDefaults();
@@ -119,19 +121,23 @@ public class ShooterSimple extends SubsystemBase  {
   public void setRPM(double rpm) {
     m_rpm=rpm;
     m_pidController.setReference(m_rpm, CANSparkMax.ControlType.kVelocity);
-    SmartDashboard.putNumber("SetPoint", m_rpm*3);
+    SmartDashboard.putNumber("SetPoint", m_rpm);
   }
   
 
   public void slower() {
     m_shooterTargetSpeed = Math.floorDiv((int)m_shooterTargetSpeed - speedStepSize, speedStepSize) * speedStepSize;
-    SmartDashboard.putNumber("Shooter Target Speed", m_shooterTargetSpeed);
+    SmartDashboard.putNumber("Shooter Speed", m_shooterTargetSpeed);
+    SmartDashboard.updateValues();
+    System.out.println("Speed: "+ m_shooterTargetSpeed);
+
   }
   
 
   public void faster() {
     m_shooterTargetSpeed = Math.floorDiv((int)m_shooterTargetSpeed + speedStepSize, speedStepSize) * speedStepSize;
-    SmartDashboard.putNumber("Shooter Target Speed", m_shooterTargetSpeed);
+    SmartDashboard.putNumber("Shooter Speed", m_shooterTargetSpeed);
+    System.out.println("Speed: "+ m_shooterTargetSpeed);
   }
 
   public void setTargetSpeed(double targetSpeed) {
@@ -144,25 +150,54 @@ public void lowSpeed() {
   public void autoSpeed() {
     //Get the distance from the goal by looking at the area the reflector takes up and doing some math that is roughly right
     //Multiply the distance in feet by a number and add to a base rpm to get an approximation of how fast to run the shooter wheel.
-
     NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
     NetworkTableEntry ta = table.getEntry("ta");
+    //System.out.println("Autotarget triggered.  ta:" + table.getEntry("ta").getDouble(0) + 
+    //  " tx:" + table.getEntry("tx").getDouble(0) +
+    //  " tz:" + table.getEntry("tz").getDouble(0)
+    //);
+    double thor = table.getEntry("thor").getDouble(0);
+    System.o ty:" + table.getEntry("ty").getDouble(0) +
+    //  "ut.println("Thor: " + thor);
+    if (thor > 0) {
+      //math here
+      double distance = 500/thor;
+      SmartDashboard.putNumber("thor", thor);
+      SmartDashboard.putNumber("Distance", distance );
+      SmartDashboard.updateValues();
+      double targetSpeed = (ShooterConstants.kShooterBaseRPM+distance*ShooterConstants.kShooterRPMIncreasePerFoot);
+      System.out.println("Thor: " + thor + "speed: " + targetSpeed);
+      setTargetSpeed(targetSpeed);
+    } else {
+      SmartDashboard.putString("Distance", "Not Found" );
+      SmartDashboard.updateValues();
+      m_shooterTargetSpeed = ShooterConstants.kShooterDefaultRPM;
+
+    }
+    /*
     if (ta.getDouble(0) > 0) {
-      double distance = 3/Math.sqrt(ta.getDouble(0));
+      double distance = 9/Math.sqrt(ta.getDouble(0));
+      System.out.println("Computed Distance:" + distance);
       SmartDashboard.putNumber("Distance", distance );
       m_shooterTargetSpeed = (ShooterConstants.kShooterBaseRPM + (distance * ShooterConstants.kShooterRPMIncreasePerFoot));
     } else {
       SmartDashboard.putString("Distance", "Not Found" );
       m_shooterTargetSpeed = ShooterConstants.kShooterBaseRPM;
     }
-    SmartDashboard.putNumber("Shooter Target Speed", m_shooterTargetSpeed);
+    */
+    SmartDashboard.putNumber("Shooter Speed", m_shooterTargetSpeed);
 
   }
 
   public boolean atSetpoint() {
     SmartDashboard.putNumber("velocity", m_encoder.getVelocity());
-    SmartDashboard.putNumber("m_rpm", m_rpm);
+    SmartDashboard.putNumber("target velocity", m_rpm);
+    if (m_encoder.getVelocity() > (m_rpm - ShooterConstants.kShooterToleranceRPM)) {
+      m_timer.stop();
+      SmartDashboard.putNumber("Shooter Rampup Time", m_timer.get());
+    }
     SmartDashboard.updateValues();
+
     return(m_encoder.getVelocity() > (m_rpm - ShooterConstants.kShooterToleranceRPM) );
   }
   
@@ -183,9 +218,13 @@ public void lowSpeed() {
     m_shooterMotor.set(0);
   }
 
+  public void twoBallRPM() {
+    setRPM(ShooterConstants.kTwoBallRPM);
+  }
   
-  
-  public void enable() {
+  public void startFlywheel() {
+    m_timer.reset();
+    m_timer.start();
       setRPM(m_shooterTargetSpeed);
   }
 
@@ -202,5 +241,9 @@ public void lowSpeed() {
   
   public double getVelocity() {
     return m_shooterMotor.getEncoder().getVelocity();
+  }
+
+  public double getTargetSpeed() {
+    return m_shooterTargetSpeed;
   }
 }

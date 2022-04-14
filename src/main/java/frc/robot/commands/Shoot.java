@@ -25,7 +25,7 @@ public class Shoot extends CommandBase {
     @Override    
     public void initialize() {
         spinningUp = true;
-        m_shooter.enable();
+        m_shooter.startFlywheel();
         timeoutTimer.reset();
         timeoutTimer.start();
     }
@@ -35,12 +35,12 @@ public class Shoot extends CommandBase {
         if (spinningUp) {
             if (m_shooter.atSetpoint()) {
                 m_shooter.runFeeder();
+                m_transfer.run();
                 feedTimer.reset();
                 feedTimer.start();
                 spinningUp=false;
             }
         }
-        System.out.println("Timers" + timeoutTimer.get() + ":" + feedTimer.get());
     }
 
     @Override    
@@ -54,7 +54,7 @@ public class Shoot extends CommandBase {
 
     @Override    
     public void end(boolean interrupted) {
-        System.out.println("END called");
+        m_transfer.stop();
         m_shooter.disable();
     }
     

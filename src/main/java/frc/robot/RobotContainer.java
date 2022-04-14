@@ -6,20 +6,11 @@ package frc.robot;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.cscore.HttpCamera;
 import edu.wpi.first.cscore.HttpCamera.HttpCameraKind;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.RamseteController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.math.trajectory.TrajectoryConfig;
-import edu.wpi.first.math.trajectory.TrajectoryGenerator;
-import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Joystick;
@@ -43,9 +34,11 @@ import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.ShooterConstants;
+import frc.robot.commands.MoreBallsAuto;
 import frc.robot.commands.MoreBallsTest;
 import frc.robot.commands.Stop;
-import frc.robot.commands.MoreBallsAuto;
+import frc.robot.commands.AutoRetractHanger;
+import frc.robot.commands.TwoBallAuto;
 import frc.robot.commands.TurnToAngle;
 import frc.robot.commands.TurnToTarget;
 import frc.robot.subsystems.DriveSubsystemMax;
@@ -72,6 +65,7 @@ public class RobotContainer {
     final ShooterSimple m_shooter = new ShooterSimple();
     final TransferSubsystem m_transfer = new TransferSubsystem();
     final Lights m_lights = new Lights();
+    ShuffleboardTab m_drivingTab;
     Joystick m_buttonStick;
     
     NetworkTable m_limelightTable = NetworkTableInstance.getDefault().getTable("limelight");
@@ -98,22 +92,24 @@ public class RobotContainer {
             m_visionThread.setDaemon(true);
             
 
-            //m_visionThread.start();
-            //m_webcamPresent = true;
+            m_visionThread.start();
+            m_webcamPresent = true;
         } else {
             System.out.println("No webcam. No vision");
             m_webcamPresent = false;
         }
-
-        ShuffleboardTab m_drivingTab = Shuffleboard.getTab("Driving");
+        m_lights.defaultColor();
+        m_drivingTab = Shuffleboard.getTab("Driving");
         List<ShuffleboardComponent<?>> components = m_drivingTab.getComponents();
         for (int i = 0; i < components.size(); i++) {
             System.out.println("Already on driving tab: " + components.get(i).getTitle());
         }
-
-        m_drivingTab.add("Shooter Speed",m_shooter.m_shooterTargetSpeed)
+        DoubleSupplier valueSupplier;
+        m_drivingTab.addNumber("Shooter Speed", m_shooter::getTargetSpeed)
+        //m_drivingTab.add("Shooter Speed",m_shooter.m_shooterTargetSpeed)
             .withPosition(0,0)
             .withSize(2,4)
+            
             .withWidget(BuiltInWidgets.kDial)
             .withProperties(Map.of("Min",1500,"Max",5700));
 
@@ -136,8 +132,8 @@ public class RobotContainer {
 
 
 
-        m_chooser.setDefaultOption("Back and Shoot", m_backAndShoot);
-        m_chooser.addOption("More Balls Test", new MoreBallsTest(m_robotDrive, m_shooter, m_transfer, m_pickup) );
+
+        m_chooser.addOption("Two Balls", new TwoBallAuto(m_robotDrive, m_shooter, m_transfer, m_pickup) );
 
         m_chooser.addOption("More Balls", new MoreBallsAuto(m_robotDrive, m_shooter, m_transfer, m_pickup) );
         m_drivingTab.add("Autonomous", m_chooser)
@@ -150,11 +146,11 @@ public class RobotContainer {
         new JoystickButton(m_buttonStick,3).whenPressed(
             new TurnToTarget(m_robotDrive));
         new JoystickButton(m_manipulatorController, Button.kA.value).whenPressed(
-                new InstantCommand(m_lights::purple).andThen(
+                
                 new InstantCommand(m_pickup::run, m_pickup).andThen(
                 new InstantCommand(m_transfer::run, m_transfer),
                 new InstantCommand(m_shooter::runFeederBackwards, m_shooter)
-        )));
+        ));
         new JoystickButton(m_manipulatorController, Button.kA.value).whenReleased(
             new InstantCommand(m_pickup::stop, m_pickup).andThen(
             new InstantCommand(m_transfer::stop, m_transfer),
@@ -165,9 +161,10 @@ public class RobotContainer {
         //new WaitCommand(2),
         //new InstantCommand(m_shooter::stopFeeder, m_shooter)));
         new POVButton(m_manipulatorController, 180).whenPressed( new InstantCommand(m_hook::retract, m_hook));
-        new POVButton(m_manipulatorController, 0).whenPressed( new InstantCommand(m_hook::extend, m_hook));
+        new ButtonAndDpad(m_buttonStick, 11, new POVButton(m_manipulatorController,0)).whenPressed(new InstantCommand(m_hook::extend, m_hook));
+        //new POVButton(m_manipulatorController, 0).whenPressed( new InstantCommand(m_hook::extend, m_hook));
         new TriggerAsButton(m_manipulatorController, 1, .5).whenPressed(
-            new InstantCommand(m_shooter::enable, m_shooter)
+            new InstantCommand(m_shooter::startFlywheel, m_shooter)
             .andThen(
                 // Wait until the shooter is at speed before feeding the frisbees
                 new WaitUntilCommand(m_shooter::atSetpoint),
@@ -217,7 +214,7 @@ new InstantCommand(m_pickup::pickupDown)
         new WaitCommand(1.6),
         new RunCommand(m_robotDrive::forward, m_robotDrive)
         ).andThen(
-            new InstantCommand(m_shooter::enable,m_shooter)
+            new InstantCommand(m_shooter::startFlywheel,m_shooter)
         .andThen(
             // Wait until the shooter is at speed before feeding the frisbees
             new WaitUntilCommand(m_shooter::atSetpoint),
@@ -253,6 +250,8 @@ new InstantCommand(m_pickup::pickupDown)
             m_driverControllerJoystickLeft.getY(), m_driverControllerJoystickRight.getY(),
             m_buttonStick.getTrigger(), m_buttonStick.getRawButton(2)),
             m_robotDrive));
+        m_hook.setDefaultCommand(new AutoRetractHanger(m_hook));
+
     }
 
 
@@ -265,80 +264,9 @@ new InstantCommand(m_pickup::pickupDown)
         return m_chooser.getSelected();
     }
 
-    public Command getTestTurnAuto() {
-        return new TurnToAngle(90,m_robotDrive);
+    public void updateShooterSpeed() {
+        Shuffleboard.update();
     }
 
-    public Command getTestTurnFailure() {
-                
-                // Create config for trajectory
-                TrajectoryConfig config =
-                new TrajectoryConfig(
-                AutoConstants.kMaxSpeedMetersPerSecond,
-                AutoConstants.kMaxAccelerationMetersPerSecondSquared)
-                // Add kinematics to ensure max speed is actually obeyed
-                .setKinematics(DriveConstants.kDriveKinematics)
-                .setStartVelocity(0)
-                .setEndVelocity(0);
-                
-                // An example trajectory to follow.  All units in meters.
-                Trajectory turn = new Trajectory(List.of(
-                    new Trajectory.State(0,0,0, new Pose2d(0,0, Rotation2d.fromDegrees(0)), 1), 
-                    new Trajectory.State(1,0,0, new Pose2d(0,0, Rotation2d.fromDegrees(90)),1)
-                    ));
-                
-                /* Trajectory turn =
-                TrajectoryGenerator.generateTrajectory(
-                    List.of(new Pose2d(0, 0, new Rotation2d(0)), 
-                            new Pose2d(0,0,Rotation2d.fromDegrees(90))),
-                    config);
-                    */
-
-                RamseteCommand ramseteCommand =
-                new RamseteCommand(
-                turn,
-                m_robotDrive::getPose,
-                new RamseteController(AutoConstants.kRamseteB, AutoConstants.kRamseteZeta),
-                // RamseteCommand passes volts to the callback
-                DriveConstants.kDriveKinematics,
-                m_robotDrive::setWheelSpeeds,
-                m_robotDrive);
-                
-                // Reset odometry to the starting pose of the trajectory.
-                m_robotDrive.resetOdometry(turn.getInitialPose());
-                
-                // Run path following command, then stop at the end.
-                return ramseteCommand.andThen(() -> m_robotDrive.tankDriveVolts(0, 0));
-         
-    }
-    /*
-    public Command moreBallsAuto() {
-        // Start the command by spinning up the shooter...
-    return new  ParallelDeadlineGroup(
-        new WaitCommand(1.6),
-        new RunCommand(m_robotDrive::forward, m_robotDrive)
-        ).andThen(
-            new InstantCommand(m_shooter::enable,m_shooter)
-        .andThen(
-            // Wait until the shooter is at speed before feeding the frisbees
-            new WaitUntilCommand(m_shooter::atSetpoint),
-            // Start running the feeder
-            new InstantCommand(m_shooter::runFeeder, m_shooter),
-            new InstantCommand(m_transfer::run, m_transfer),
-            // Shoot for the specified time
-            new WaitCommand(AutoConstants.kAutoShootTimeSeconds))
-        // Add a timeout (will end the command if, for instance, the shooter never gets up to
-        // speed)
-        .withTimeout(AutoConstants.kAutoTimeoutSeconds)
-        // When the command ends, turn off the shooter and the feeder
-        .andThen(
-            () -> {
-              m_shooter.disable();
-              m_transfer.stop();
-              m_shooter.stopFeeder();
-            }));
-
-
-    }*/
     
 }
