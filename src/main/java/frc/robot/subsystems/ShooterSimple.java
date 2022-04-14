@@ -157,8 +157,7 @@ public void lowSpeed() {
     //  " tz:" + table.getEntry("tz").getDouble(0)
     //);
     double thor = table.getEntry("thor").getDouble(0);
-    System.o ty:" + table.getEntry("ty").getDouble(0) +
-    //  "ut.println("Thor: " + thor);
+    System.out.println("Thor: " + thor + " ty:" + table.getEntry("ty").getDouble(0) );
     if (thor > 0) {
       //math here
       double distance = 500/thor;
