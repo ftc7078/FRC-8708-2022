@@ -134,7 +134,7 @@ public class RobotContainer {
 
 
 
-        m_chooser.addOption("Two Balls", new TwoBallAuto(m_robotDrive, m_shooter, m_transfer, m_pickup) );
+        m_chooser.setDefaultOption("Two Balls", new TwoBallAuto(m_robotDrive, m_shooter, m_transfer, m_pickup) );
 
         m_chooser.addOption("More Balls", new MoreBallsAuto(m_robotDrive, m_shooter, m_transfer, m_pickup) );
         m_drivingTab.add("Autonomous", m_chooser)

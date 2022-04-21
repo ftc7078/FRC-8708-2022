@@ -47,7 +47,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Lights", 0);
     SmartDashboard.updateValues();
     m_robotContainer = new RobotContainer();
-    m_robotContainer.setupDefaultStopped();
+    m_robotContainer.setupJoystickControll();
 
   }
 
@@ -96,7 +96,7 @@ public class Robot extends TimedRobot {
     //double angle = SmartDashboard.getNumber("Angle",90);
     //System.out.println("kp" + m_robotContainer.m_robotDrive.kp);
     //m_autonomousCommand = new TurnToAngle(angle,m_robotContainer.m_robotDrive);
-    m_robotContainer.setupDefaultStopped();
+    //m_robotContainer.setupDefaultStopped();
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
     m_robotContainer.m_robotDrive.resetEncoders();
     m_robotContainer.m_robotDrive.resetGyro();
@@ -123,6 +123,9 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
+    if (m_autonomousCommand != null) {
+      m_autonomousCommand.cancel();
+    }
     m_robotContainer.setupJoystickControll();
     m_robotContainer.m_shooter.stopFeeder();
     m_robotContainer.m_shooter.stopFlywheel();
@@ -131,9 +134,7 @@ public class Robot extends TimedRobot {
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
     // this line or comment it out.
-    if (m_autonomousCommand != null) {
-      m_autonomousCommand.cancel();
-    }
+
   }
 
   /** This function is called periodically during operator control. */
