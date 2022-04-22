@@ -185,7 +185,7 @@ public void lowSpeed() {
       } else {
         SmartDashboard.putString("Angle", "Nope" );
         SmartDashboard.putString("Distance", "Nope" );
-        setTargetSpeed(ShooterConstants.kShooterDefaultRPM);
+        setTargetSpeed(ShooterConstants.kNoTargetRPM);
       }
     }
     /*

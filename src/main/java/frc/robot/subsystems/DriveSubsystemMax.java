@@ -117,8 +117,8 @@ public class DriveSubsystemMax extends SubsystemBase {
       speedFactor = 0.5;
     }
     SmartDashboard.putNumber("speedFactor", speedFactor);
-    double leftMotorPower = unDeadband(leftSpeed*speedFactor*1.1, 0.05, 0.3);
-    double rightMotorPower = unDeadband(rightSpeed * speedFactor, 0.05, 0.3);
+    double leftMotorPower = unDeadband(leftSpeed*speedFactor*1.1, 0.05, 0.1);
+    double rightMotorPower = unDeadband(rightSpeed * speedFactor, 0.05, 0.1);
     tankDrive(leftMotorPower, rightMotorPower);
   }
   
@@ -132,7 +132,7 @@ public class DriveSubsystemMax extends SubsystemBase {
   
   
   private double unDeadband(double input, double deadband, double undeadband) {
-    double speed = Math.deadband(input,deadband);
+    double speed = MathUtil.applyDeadband(input,deadband);
     if (speed == 0) { return 0;}
     return ((Math.abs(input) + undeadband) * (Math.abs(input)/input));
   }

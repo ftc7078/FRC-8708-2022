@@ -58,7 +58,8 @@ public final class Constants {
   }
   
   public static final class ShooterConstants {
-    public static double kTwoBallRPM = 4300;
+    public static double kTwoBallRPM = 4350;
+    public static double kNoTargetRPM = 4350;
     public static int kShooterBaseRPM = 2500;
     public static double kShooterRPMIncreasePerFoot = 160;
     public static double kShooterDefaultRPM = 3800;
