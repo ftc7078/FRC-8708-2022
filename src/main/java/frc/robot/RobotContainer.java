@@ -144,27 +144,27 @@ public class RobotContainer {
     }
     
     private void configureButtonBindings() {
-        new JoystickButton(m_buttonStick,3).whenPressed(
+        new JoystickButton(m_buttonStick,3).onTrue(
             new TurnToTarget(m_robotDrive));
-        new JoystickButton(m_manipulatorController, Button.kA.value).whenPressed(
+        new JoystickButton(m_manipulatorController, Button.kA.value).onTrue(
                 
                 new InstantCommand(m_pickup::run, m_pickup).andThen(
                 new InstantCommand(m_transfer::run, m_transfer),
                 new InstantCommand(m_shooter::runFeederBackwards, m_shooter)
         ));
-        new JoystickButton(m_manipulatorController, Button.kA.value).whenReleased(
+        new JoystickButton(m_manipulatorController, Button.kA.value).onFalse(
             new InstantCommand(m_pickup::stop, m_pickup).andThen(
             new InstantCommand(m_transfer::stop, m_transfer),
             new InstantCommand(m_shooter::stopFeeder, m_shooter)
         ));
-        //new JoystickButton(m_manipulatorController, Button.kStart.value).whenPressed(new SequentialCommandGroup(
+        //new JoystickButton(m_manipulatorController, Button.kStart.value).onTrue(new SequentialCommandGroup(
         //new InstantCommand(m_shooter::runFeeder, m_shooter),
         //new WaitCommand(2),
         //new InstantCommand(m_shooter::stopFeeder, m_shooter)));
-        new POVButton(m_manipulatorController, 180).whenPressed( new InstantCommand(m_hook::retract, m_hook));
-        new ButtonAndDpad(m_buttonStick, 11, new POVButton(m_manipulatorController,0)).whenPressed(new InstantCommand(m_hook::extend, m_hook));
-        //new POVButton(m_manipulatorController, 0).whenPressed( new InstantCommand(m_hook::extend, m_hook));
-        new TriggerAsButton(m_manipulatorController, 1, .5).whenPressed(
+        new POVButton(m_manipulatorController, 180).onTrue( new InstantCommand(m_hook::retract, m_hook));
+        new ButtonAndDpad(m_buttonStick, 11, new POVButton(m_manipulatorController,0)).onTrue(new InstantCommand(m_hook::extend, m_hook));
+        //new POVButton(m_manipulatorController, 0).onTrue( new InstantCommand(m_hook::extend, m_hook));
+        new TriggerAsButton(m_manipulatorController, 1, .5).onTrue(
             new InstantCommand(m_shooter::startFlywheel, m_shooter)
             .andThen(
                 // Wait until the shooter is at speed before feeding the frisbees
@@ -186,24 +186,24 @@ public class RobotContainer {
                 }));
   
         
-        new JoystickButton(m_manipulatorController, Button.kStart.value).whenPressed(new InstantCommand(m_shooter::faster, m_shooter));
-        new JoystickButton(m_manipulatorController, Button.kBack.value).whenPressed(new InstantCommand(m_shooter::slower, m_shooter));
-        new JoystickButton(m_manipulatorController, Button.kRightBumper.value).whenPressed(new InstantCommand(m_shooter::autoSpeed, m_shooter));
-        new JoystickButton(m_manipulatorController, Button.kY.value).whenPressed(
+        new JoystickButton(m_manipulatorController, Button.kStart.value).onTrue(new InstantCommand(m_shooter::faster, m_shooter));
+        new JoystickButton(m_manipulatorController, Button.kBack.value).onTrue(new InstantCommand(m_shooter::slower, m_shooter));
+        new JoystickButton(m_manipulatorController, Button.kRightBumper.value).onTrue(new InstantCommand(m_shooter::autoSpeed, m_shooter));
+        new JoystickButton(m_manipulatorController, Button.kY.value).onTrue(
             new InstantCommand(m_shooter::disable, m_shooter).andThen(
             new InstantCommand(m_transfer::stop, m_transfer)
             ));
-        new JoystickButton(m_manipulatorController, Button.kB.value).whenPressed(
+        new JoystickButton(m_manipulatorController, Button.kB.value).onTrue(
             new InstantCommand(m_transfer::backwards, m_transfer).andThen(
             new InstantCommand(m_pickup::reverse,m_pickup)));
-        new JoystickButton(m_manipulatorController, Button.kB.value).whenReleased(
+        new JoystickButton(m_manipulatorController, Button.kB.value).onFalse(
             new InstantCommand(m_transfer::stop, m_transfer).andThen(
             new InstantCommand(m_pickup::stopMotor,m_pickup)));
-        new JoystickButton(m_manipulatorController, Button.kLeftBumper.value).whenPressed(new InstantCommand(m_shooter::lowSpeed));
-  new TriggerAsButton(m_manipulatorController, 0, .5).whenPressed(
+        new JoystickButton(m_manipulatorController, Button.kLeftBumper.value).onTrue(new InstantCommand(m_shooter::lowSpeed));
+  new TriggerAsButton(m_manipulatorController, 0, .5).onTrue(
 new InstantCommand(m_pickup::pickupDown)
   );
-  new TriggerAsButton(m_manipulatorController, 0, .5).whenReleased(
+  new TriggerAsButton(m_manipulatorController, 0, .5).onFalse(
     new InstantCommand(m_pickup::pickupUp)
       );
         
