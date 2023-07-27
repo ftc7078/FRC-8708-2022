@@ -5,6 +5,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.PneumaticsControlModule;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
@@ -15,7 +16,7 @@ public class PickupSubsystem extends SubsystemBase {
     
         PneumaticsControlModule m_pnu = new PneumaticsControlModule();
         DoubleSolenoid m_arm = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 0, 1);
-        CANSparkMax m_motor = new CANSparkMax(Constants.kPickupMotor ,MotorType.kBrushed);
+        Spark m_motor = new Spark(4);
         
         public PickupSubsystem() { 
 

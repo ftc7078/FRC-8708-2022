@@ -3,14 +3,14 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.subsystems.DriveSubsystemMax;
+import frc.robot.subsystems.DriveSubsystemOutreach;
 
 public class Stop extends CommandBase { 
-    DriveSubsystemMax m_drive;
+    DriveSubsystemOutreach m_drive;
     double m_timeout;
     Timer timer = new Timer();
 
-    public Stop(DriveSubsystemMax drive, double timeout) {
+    public Stop(DriveSubsystemOutreach drive, double timeout) {
         m_drive = drive;
         m_timeout = timeout;
         timer.reset();

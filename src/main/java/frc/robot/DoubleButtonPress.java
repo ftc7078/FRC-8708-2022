@@ -4,19 +4,18 @@
 
 package frc.robot;
 
-import static edu.wpi.first.wpilibj.util.ErrorMessages.requireNonNullParam;
 
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj2.command.button.Button;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 /**
  * A {@link Button} that gets its state from a POV on a {@link GenericHID}.
  *
  * <p>This class is provided by the NewCommands VendorDep
  */
-public class DoubleButtonPress extends Button {
+public class DoubleButtonPress extends Trigger {
   private final XboxController m_controller;
   private final int m_controllerButton;
   private final Joystick m_joystick;
@@ -32,7 +31,6 @@ public class DoubleButtonPress extends Button {
    * @param povNumber The POV number (see {@link GenericHID#getPOV(int)})
    */
   public DoubleButtonPress(XboxController controller, int controllerButton, Joystick joystick, int joystickButton) {
-    requireNonNullParam(controller, "joystick", "POVButton");
 
     m_controller = controller;
     m_joystick = joystick;
@@ -48,7 +46,6 @@ public class DoubleButtonPress extends Button {
    *
    * @return Whether the value of the POV matches the target angle
    */
-  @Override
   public boolean get() {
     return (m_joystick.getRawButton(m_joystickButton) && m_controller.getRawButton(m_controllerButton) );
   }

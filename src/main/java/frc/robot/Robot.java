@@ -98,7 +98,6 @@ public class Robot extends TimedRobot {
     //m_autonomousCommand = new TurnToAngle(angle,m_robotContainer.m_robotDrive);
     //m_robotContainer.setupDefaultStopped();
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-    m_robotContainer.m_robotDrive.resetEncoders();
     m_robotContainer.m_robotDrive.resetGyro();
     m_robotContainer.m_shooter.setTargetSpeed(ShooterConstants.kTwoBallRPM);
  
