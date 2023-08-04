@@ -13,7 +13,7 @@ import edu.wpi.first.cscore.HttpCamera;
 import edu.wpi.first.cscore.HttpCamera.HttpCameraKind;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import frc.robot.Constants.AutoConstants;
@@ -67,7 +68,7 @@ public class RobotContainer {
     final TransferSubsystem m_transfer = new TransferSubsystem();
     final Lights m_lights = new Lights();
     ShuffleboardTab m_drivingTab;
-    Joystick m_buttonStick;
+    CommandJoystick m_buttonStick;
     
     NetworkTable m_limelightTable = NetworkTableInstance.getDefault().getTable("limelight");
     
@@ -76,9 +77,9 @@ public class RobotContainer {
     
     
     // The driver's controller
-    XboxController m_manipulatorController = new XboxController(OIConstants.kManipulatorControllerPort);
-    Joystick m_driverControllerJoystickLeft = new Joystick(OIConstants.kDriverControllerPort1);
-    Joystick m_driverControllerJoystickRight = new Joystick(OIConstants.kDriverControllerPort2);
+    CommandXboxController m_manipulatorController = new CommandXboxController(OIConstants.kManipulatorControllerPort);
+    CommandJoystick m_driverControllerJoystickLeft = new CommandJoystick(OIConstants.kDriverControllerPort1);
+    CommandJoystick m_driverControllerJoystickRight = new CommandJoystick(OIConstants.kDriverControllerPort2);
     BallDetector m_ballDetector;
     
     
@@ -125,8 +126,10 @@ public class RobotContainer {
         Shuffleboard.update();
         // Configure the button bindings
         m_buttonStick = m_driverControllerJoystickRight;
-        configureButtonBindings();
         
+        // configureButtonBindings();
+        paradeButtonBindings();
+
         // Configure default commands
         // Set the default drive command to split-stick arcade drive
         
@@ -141,71 +144,148 @@ public class RobotContainer {
             .withWidget(BuiltInWidgets.kSplitButtonChooser);
     }
     
-    private void configureButtonBindings() {
-;
-        new JoystickButton(m_manipulatorController, Button.kA.value).onTrue(
+//     private void configureButtonBindings() {
+// ;
+//         new JoystickButton(m_manipulatorController, Button.kA.value).onTrue(
                 
-                new InstantCommand(m_pickup::run, m_pickup).andThen(
-                new InstantCommand(m_transfer::run, m_transfer),
-                new InstantCommand(m_shooter::runFeederBackwards, m_shooter)
-        ));
-        new JoystickButton(m_manipulatorController, Button.kA.value).onFalse(
-            new InstantCommand(m_pickup::stop, m_pickup).andThen(
-            new InstantCommand(m_transfer::stop, m_transfer),
-            new InstantCommand(m_shooter::stopFeeder, m_shooter)
-        ));
-        //new JoystickButton(m_manipulatorController, Button.kStart.value).onTrue(new SequentialCommandGroup(
-        //new InstantCommand(m_shooter::runFeeder, m_shooter),
-        //new WaitCommand(2),
-        //new InstantCommand(m_shooter::stopFeeder, m_shooter)));
-        new POVButton(m_manipulatorController, 180).onTrue( new InstantCommand(m_hook::retract, m_hook));
-        new ButtonAndDpad(m_buttonStick, 11, new POVButton(m_manipulatorController,0)).onTrue(new InstantCommand(m_hook::extend, m_hook));
-        //new POVButton(m_manipulatorController, 0).onTrue( new InstantCommand(m_hook::extend, m_hook));
-        new TriggerAsButton(m_manipulatorController, 1, .5).onTrue(
-            new InstantCommand(m_shooter::startFlywheel, m_shooter)
-            .andThen(
-                // Wait until the shooter is at speed before feeding the frisbees
-                new WaitUntilCommand(m_shooter::atSetpoint),
-                // Start running the feeder
-                new InstantCommand(m_shooter::runFeeder, m_shooter),
-                new InstantCommand(m_transfer::run, m_transfer),
-                // Shoot for the specified time
-                new WaitCommand(ShooterConstants.kShootTimeSeconds))
-            // Add a timeout (will end the command if, for instance, the shooter never gets up to
-            // speed)
-            .withTimeout(ShooterConstants.kShootTimeoutSeconds)
-            // When the command ends, turn off the shooter and the feeder
-            .andThen(
-                () -> {
-                  m_shooter.stopFlywheel();
-                  m_shooter.stopFeeder();
-                  m_transfer.stop();
-                }));
+//                 new InstantCommand(m_pickup::run, m_pickup).andThen(
+//                 new InstantCommand(m_transfer::run, m_transfer),
+//                 new InstantCommand(m_shooter::runFeederBackwards, m_shooter)
+//         ));
+//         new JoystickButton(m_manipulatorController, Button.kA.value).onFalse(
+//             new InstantCommand(m_pickup::stop, m_pickup).andThen(
+//             new InstantCommand(m_transfer::stop, m_transfer),
+//             new InstantCommand(m_shooter::stopFeeder, m_shooter)
+//         ));
+//         //new JoystickButton(m_manipulatorController, Button.kStart.value).onTrue(new SequentialCommandGroup(
+//         //new InstantCommand(m_shooter::runFeeder, m_shooter),
+//         //new WaitCommand(2),
+//         //new InstantCommand(m_shooter::stopFeeder, m_shooter)));
+//         //new POVButton(m_manipulatorController, 0).onTrue( new InstantCommand(m_hook::extend, m_hook));
+//         m_driverControllerJoystickLeft.trigger().onTrue(
+//             new InstantCommand(m_shooter::startFlywheel, m_shooter)
+//             .andThen(
+//                 // Wait until the shooter is at speed before feeding the frisbees
+//                 new WaitUntilCommand(m_shooter::atSetpoint),
+//                 // Start running the feeder
+//                 new InstantCommand(m_shooter::runFeeder, m_shooter),
+//                 new InstantCommand(m_transfer::run, m_transfer),
+//                 // Shoot for the specified time
+//                 new WaitCommand(ShooterConstants.kShootTimeSeconds))
+//             // Add a timeout (will end the command if, for instance, the shooter never gets up to
+//             // speed)
+//             .withTimeout(ShooterConstants.kShootTimeoutSeconds)
+//             // When the command ends, turn off the shooter and the feeder
+//             .andThen(
+//                 () -> {
+//                   m_shooter.stopFlywheel();
+//                   m_shooter.stopFeeder();
+//                   m_transfer.stop();
+//                 }));
   
         
-        new JoystickButton(m_manipulatorController, Button.kStart.value).onTrue(new InstantCommand(m_shooter::faster, m_shooter));
-        new JoystickButton(m_manipulatorController, Button.kBack.value).onTrue(new InstantCommand(m_shooter::slower, m_shooter));
-        new JoystickButton(m_manipulatorController, Button.kRightBumper.value).onTrue(new InstantCommand(m_shooter::autoSpeed, m_shooter));
-        new JoystickButton(m_manipulatorController, Button.kY.value).onTrue(
-            new InstantCommand(m_shooter::disable, m_shooter).andThen(
-            new InstantCommand(m_transfer::stop, m_transfer)
-            ));
-        new JoystickButton(m_manipulatorController, Button.kB.value).onTrue(
-            new InstantCommand(m_transfer::backwards, m_transfer).andThen(
-            new InstantCommand(m_pickup::reverse,m_pickup)));
-        new JoystickButton(m_manipulatorController, Button.kB.value).onFalse(
-            new InstantCommand(m_transfer::stop, m_transfer).andThen(
-            new InstantCommand(m_pickup::stopMotor,m_pickup)));
-        new JoystickButton(m_manipulatorController, Button.kLeftBumper.value).onTrue(new InstantCommand(m_shooter::lowSpeed));
-  new TriggerAsButton(m_manipulatorController, 0, .5).onTrue(
-new InstantCommand(m_pickup::pickupDown)
-  );
-  new TriggerAsButton(m_manipulatorController, 0, .5).onFalse(
-    new InstantCommand(m_pickup::pickupUp)
-      );
+//         m_manipulatorController.start().onTrue(new InstantCommand(m_shooter::faster, m_shooter));
+//         m_manipulatorController.back().onTrue(new InstantCommand(m_shooter::slower, m_shooter));
+//         m_manipulatorController.rightBumper().onTrue(new InstantCommand(m_shooter::autoSpeed, m_shooter));
+//         m_driverControllerJoystickLeft.top().onTrue(
+//             new InstantCommand(m_shooter::disable, m_shooter).andThen(
+//             new InstantCommand(m_transfer::stop, m_transfer)
+//             ));
+//         m_driverControllerJoystickRight.button(4).onTrue(
+//             new InstantCommand(m_transfer::backwards, m_transfer).andThen(
+//             new InstantCommand(m_pickup::reverse,m_pickup)));
+//         m_manipulatorController.b().onFalse(
+//             new InstantCommand(m_transfer::stop, m_transfer).andThen(
+//             new InstantCommand(m_pickup::stopMotor,m_pickup)));
+//         m_manipulatorController.leftBumper().onTrue(new InstantCommand(m_shooter::lowSpeed));
+//   m_manipulatorController.leftTrigger().onTrue(
+//         new InstantCommand(m_pickup::pickupDown)
+//   );
+//   m_manipulatorController.leftTrigger().onFalse(
+//     new InstantCommand(m_pickup::pickupUp)
+//       );
         
+//     }
+
+
+
+
+    private void paradeButtonBindings() {
+        m_driverControllerJoystickLeft.top().onTrue(
+            new InstantCommand(m_pickup::stop, m_pickup).andThen(
+            new InstantCommand(m_transfer::stop, m_transfer),
+            new InstantCommand(m_shooter::stopFeeder, m_shooter)));
+        
+        m_driverControllerJoystickRight.button(3).onTrue(
+            new InstantCommand(m_pickup::run, m_pickup).andThen(
+            new InstantCommand(m_transfer::run, m_transfer),
+            new InstantCommand(m_shooter::runFeeder, m_shooter)));
+
+        m_driverControllerJoystickRight.button(3).onFalse(
+            new InstantCommand(m_pickup::stop, m_pickup).andThen(
+            new InstantCommand(m_transfer::stop, m_transfer),
+            new InstantCommand(m_shooter::stopFeeder, m_shooter)));
+
+        m_driverControllerJoystickRight.button(4).onTrue(
+                new InstantCommand(m_pickup::reverse, m_pickup).andThen(
+                new InstantCommand(m_transfer::backwards, m_transfer),
+                new InstantCommand(m_shooter::runFeederBackwards, m_shooter)));
+        
+        m_driverControllerJoystickRight.button(4).onFalse(
+            new InstantCommand(m_pickup::stop, m_pickup).andThen(
+            new InstantCommand(m_transfer::stop, m_transfer),
+            new InstantCommand(m_shooter::stopFeeder, m_shooter)));  
+        
+
+        
+        m_driverControllerJoystickLeft.trigger().onTrue(
+                new InstantCommand(m_shooter::startFlywheel, m_shooter)
+                        .andThen(
+                                // Wait until the shooter is at speed before feeding the frisbees
+                                new WaitUntilCommand(m_shooter::atSetpoint),
+                                // Start running the feeder
+                                new InstantCommand(m_shooter::runFeeder, m_shooter),
+                                new InstantCommand(m_transfer::run, m_transfer),
+                                // Shoot for the specified time
+                                new WaitCommand(ShooterConstants.kShootTimeSeconds))
+                        // Add a timeout (will end the command if, for instance, the shooter never gets
+                        // up to
+                        // speed)
+                        .withTimeout(ShooterConstants.kShootTimeoutSeconds)
+                        // When the command ends, turn off the shooter and the feeder
+                        .andThen(
+                                () -> {
+                                    m_shooter.stopFlywheel();
+                                    m_shooter.stopFeeder();
+                                    m_transfer.stop();
+                                }));
+
+        m_driverControllerJoystickRight.button(6).onTrue(new InstantCommand(m_shooter::faster, m_shooter));
+        m_driverControllerJoystickRight.button(7).onTrue(new InstantCommand(m_shooter::slower, m_shooter));
+        // m_manipulatorController.rightBumper().onTrue(new InstantCommand(m_shooter::autoSpeed, m_shooter));
+        m_driverControllerJoystickLeft.top().onTrue(
+                new InstantCommand(m_shooter::disable, m_shooter).andThen(
+                        new InstantCommand(m_transfer::stop, m_transfer)));
+        
+        // m_manipulatorController.b().onFalse(
+        //         new InstantCommand(m_transfer::stop, m_transfer).andThen(
+        //                 new InstantCommand(m_pickup::stopMotor, m_pickup)));
+        // m_manipulatorController.leftBumper().onTrue(new InstantCommand(m_shooter::lowSpeed));
+        m_driverControllerJoystickRight.top().onTrue(
+                new InstantCommand(m_pickup::pickupDown));
+        m_driverControllerJoystickRight.top().onFalse(
+                new InstantCommand(m_pickup::pickupUp));
+
     }
     
+
+
+
+
+
+
+
+
     private final Command m_backAndShoot =
     // Start the command by spinning up the shooter...
     new  ParallelDeadlineGroup(
@@ -246,7 +326,7 @@ new InstantCommand(m_pickup::pickupDown)
             () ->
             m_robotDrive.tankDrive(
             m_driverControllerJoystickLeft.getY(), m_driverControllerJoystickRight.getY(),
-            m_buttonStick.getTrigger(), m_buttonStick.getRawButton(2)),
+            m_driverControllerJoystickRight.trigger().getAsBoolean(), false),
             m_robotDrive));
         m_hook.setDefaultCommand(new AutoRetractHanger(m_hook));
 

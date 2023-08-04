@@ -93,6 +93,24 @@ public class DriveSubsystemOutreach extends SubsystemBase {
   *  trigger speeds it up and there is a button to slow it down
   */
   public void tankDrive(double leftSpeed, double rightSpeed, Boolean trigger, Boolean slowButton) {
+    double speedFactor = -0.7;
+    if (trigger){
+      if (slowButton){
+        speedFactor = -0.7;
+      } else {
+        speedFactor = -1;
+      }
+    } else if (slowButton){
+      speedFactor = -0.5;
+    }
+    SmartDashboard.putNumber("speedFactor", speedFactor);
+    double leftMotorPower = unDeadband(leftSpeed*speedFactor*1.1, 0.05, 0.1);
+    double rightMotorPower = unDeadband(rightSpeed * speedFactor, 0.05, 0.1);
+    tankDrive(leftMotorPower, rightMotorPower);
+  }
+
+  public void arcadeDrive(double leftSpeed, double rightSpeed, Boolean trigger, Boolean slowButton) {
+
     double speedFactor = 0.7;
     if (trigger){
       if (slowButton){
@@ -104,6 +122,9 @@ public class DriveSubsystemOutreach extends SubsystemBase {
       speedFactor = 0.5;
     }
     SmartDashboard.putNumber("speedFactor", speedFactor);
+
+    // double leftMotorPower = leftSpeed
+
     double leftMotorPower = unDeadband(leftSpeed*speedFactor*1.1, 0.05, 0.1);
     double rightMotorPower = unDeadband(rightSpeed * speedFactor, 0.05, 0.1);
     tankDrive(leftMotorPower, rightMotorPower);

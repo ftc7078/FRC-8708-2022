@@ -21,7 +21,7 @@ public class PickupSubsystem extends SubsystemBase {
         public PickupSubsystem() { 
 
             m_arm.set(Value.kReverse);
-            
+            m_motor.setInverted(true);
         }
 
         public void armDown() {
