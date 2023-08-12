@@ -35,7 +35,7 @@ public class ShooterSimple extends SubsystemBase  {
   private Timer m_timer = new Timer();
   
   public ShooterSimple() {
-    m_shooterMotor.restoreFactoryDefaults();
+    // m_shooterMotor.restoreFactoryDefaults();
     // PID coefficients
     kMaxOutput = 1; 
     kMinOutput = 0;
@@ -66,6 +66,7 @@ public class ShooterSimple extends SubsystemBase  {
     SmartDashboard.putNumber("Max Output", kMaxOutput);
     SmartDashboard.putNumber("Min Output", kMinOutput);
     m_feederMotor.setInverted(true);
+    m_shooterMotor.setInverted(false);
   }
   
   

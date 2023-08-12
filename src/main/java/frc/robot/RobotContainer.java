@@ -219,7 +219,7 @@ public class RobotContainer {
         m_driverControllerJoystickRight.button(3).onTrue(
             new InstantCommand(m_pickup::run, m_pickup).andThen(
             new InstantCommand(m_transfer::run, m_transfer),
-            new InstantCommand(m_shooter::runFeeder, m_shooter)));
+            new InstantCommand(m_shooter::runFeederBackwards, m_shooter)));
 
         m_driverControllerJoystickRight.button(3).onFalse(
             new InstantCommand(m_pickup::stop, m_pickup).andThen(
