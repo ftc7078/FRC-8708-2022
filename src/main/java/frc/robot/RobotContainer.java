@@ -16,12 +16,14 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
+import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardComponent;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
@@ -85,6 +87,8 @@ public class RobotContainer {
     CommandJoystick m_driverControllerJoystickLeft = new CommandJoystick(OIConstants.kDriverControllerPort1);
     CommandJoystick m_driverControllerJoystickRight = new CommandJoystick(OIConstants.kDriverControllerPort2);
     BallDetector m_ballDetector;
+    EventLoop demoButtonBindings = CommandScheduler.getInstance().getActiveButtonLoop();
+    EventLoop paradeButtonBindings = new EventLoop();
     
     
     /** The container for the robot. Contains subsystems, OI devices, and commands. 
@@ -149,29 +153,33 @@ public class RobotContainer {
 
 
     void updateControlStyle() {
+        if (controlStyle.getSelected() == null) {
+            CommandScheduler.getInstance().setActiveButtonLoop(demoButtonBindings);
+            return;
+        }
+        switch(controlStyle.getSelected()) {
+            case PARADE_CONTROLS: {
+                break;
+            } case DEMO_CONTROLS: {
+                
+                break;
+            } default: {};
+        }        
         configureButtonBindings();
         updateDefaultCommands();
     }
 
     private void configureButtonBindings() {
         m_manipulatorController = new CommandXboxController(OIConstants.kManipulatorControllerPort);
-        if (controlStyle.getSelected() == null) {
-            return;
-        }
+        configureParadeButtonBindings(demoButtonBindings);
+        configureDemoButtonBindings();
+    }
 
+    private void switchButtonBindings() {
 
-        switch(controlStyle.getSelected()) {
-            case PARADE_CONTROLS: {
-                paradeButtonBindings();
-                break;
-            } case DEMO_CONTROLS: {
-                demoButtonBindings();
-                break;
-            } default: {};
-        }
     }
     
-    private void demoButtonBindings() {
+    private void configureDemoButtonBindings() {
         m_manipulatorController.a().onTrue(
                 new InstantCommand(m_pickup::run, m_pickup).andThen(
                 new InstantCommand(m_transfer::run, m_transfer),
@@ -235,20 +243,20 @@ public class RobotContainer {
 
 
 
-    private void paradeButtonBindings() {
+    private void configureParadeButtonBindings(EventLoop l) {
         // Stop everything
-        m_manipulatorController.start().onTrue(
+        m_manipulatorController.start(l).onTrue(
             new InstantCommand(m_pickup::stop, m_pickup).andThen(
             new InstantCommand(m_transfer::stop, m_transfer),
             new InstantCommand(m_shooter::stopFeeder, m_shooter)));
 
             // Back ball out
-            m_manipulatorController.leftBumper().onTrue(
+            m_manipulatorController.leftBumper(l).onTrue(
                 new InstantCommand(m_pickup::reverse, m_pickup).andThen(
                 new InstantCommand(m_transfer::backwards, m_transfer),
                 new InstantCommand(m_shooter::runFeederBackwards, m_shooter)));
         
-            m_manipulatorController.rightTrigger().onTrue(
+            m_manipulatorController.rightTrigger(0.5,l).onTrue(
                 new InstantCommand(m_shooter::startFlywheel, m_shooter)
                         .andThen(
                                 // Wait until the shooter is at speed before feeding the frisbees
@@ -270,12 +278,12 @@ public class RobotContainer {
                                     m_transfer.stop();
                                 }));
 
-        m_manipulatorController.povUp().onTrue(new InstantCommand(m_shooter::faster, m_shooter));
-        m_manipulatorController.povDown().onTrue(new InstantCommand(m_shooter::slower, m_shooter));
+        m_manipulatorController.pov(0,0,l).onTrue(new InstantCommand(m_shooter::faster, m_shooter));
+        m_manipulatorController.pov(0,180,l).onTrue(new InstantCommand(m_shooter::slower, m_shooter));
 
-        m_manipulatorController.leftTrigger().onTrue(
+        m_manipulatorController.leftTrigger(l,0.5).onTrue(
             new InstantCommand(m_pickup::pickupDown));
-        m_manipulatorController.leftTrigger().onFalse(
+        m_manipulatorController.leftTrigger(l,0.5).onFalse(
             new InstantCommand(m_pickup::pickupUp));
 
     }
@@ -328,7 +336,7 @@ public class RobotContainer {
             new RunCommand(
             () ->
             m_robotDrive.arcadeDrive(
-            m_manipulatorController.getLeftY(), m_manipulatorController.getRightX(),
+            m_manipulatorController.getHID().getLeftY(), m_manipulatorController.getHID().getRightX(),
             false, false),
             m_robotDrive));
         m_hook.setDefaultCommand(new AutoRetractHanger(m_hook));
@@ -339,8 +347,8 @@ public class RobotContainer {
             new RunCommand(
             () ->
             m_robotDrive.tankDrive(
-            m_driverControllerJoystickLeft.getY(), m_driverControllerJoystickRight.getY(),
-            m_driverControllerJoystickRight.trigger().getAsBoolean(), false),
+            m_driverControllerJoystickLeft.getHID().getY(), m_driverControllerJoystickRight.getHID().getY(),
+            m_driverControllerJoystickRight.getHID().getTrigger(), false),
             m_robotDrive));
         m_hook.setDefaultCommand(new AutoRetractHanger(m_hook));
     }
