@@ -109,7 +109,7 @@ public class DriveSubsystemOutreach extends SubsystemBase {
     tankDrive(leftMotorPower, rightMotorPower);
   }
 
-  public void arcadeDrive(double leftSpeed, double rightSpeed, Boolean trigger, Boolean slowButton) {
+  public void arcadeDrive(double speed, double rotation, Boolean trigger, Boolean slowButton) {
 
     double speedFactor = 0.7;
     if (trigger){
@@ -125,9 +125,9 @@ public class DriveSubsystemOutreach extends SubsystemBase {
 
     // double leftMotorPower = leftSpeed
 
-    double leftMotorPower = unDeadband(leftSpeed*speedFactor*1.1, 0.05, 0.1);
-    double rightMotorPower = unDeadband(rightSpeed * speedFactor, 0.05, 0.1);
-    tankDrive(leftMotorPower, rightMotorPower);
+    speed = unDeadband(speed*speedFactor, 0.05, 0.1);
+    rotation = unDeadband(rotation * speedFactor, 0.05, 0.1);
+    m_drive.arcadeDrive(-speed, -rotation);
   }
   
   private void setLeftMotors(double d) {
