@@ -71,23 +71,23 @@ public class RobotContainer {
     final Lights m_lights = new Lights();
     ShuffleboardTab m_drivingTab;
     CommandJoystick m_buttonStick;
-    
+
     NetworkTable m_limelightTable = NetworkTableInstance.getDefault().getTable("limelight");
-    
+
     SendableChooser<Command> m_chooser = new SendableChooser<>();
 
     final SendableChooser<Integer> controlStyle = new SendableChooser();
     final static int PARADE_CONTROLS = 0;
     final static int DEMO_CONTROLS = 1;
-    
+
     // The driver's controller
     CommandXboxController m_manipulatorController = new CommandXboxController(OIConstants.kManipulatorControllerPort);
     CommandJoystick m_driverControllerJoystickLeft = new CommandJoystick(OIConstants.kDriverControllerPort1);
     CommandJoystick m_driverControllerJoystickRight = new CommandJoystick(OIConstants.kDriverControllerPort2);
     BallDetector m_ballDetector;
-    
-    
-    /** The container for the robot. Contains subsystems, OI devices, and commands. 
+
+
+    /** The container for the robot. Contains subsystems, OI devices, and commands.
      * @param Map */
     public RobotContainer() {
         //Configure Shuffleboard
@@ -96,7 +96,7 @@ public class RobotContainer {
             System.out.println("Webcam Found.  Firing up vision.");
             m_visionThread = new MyVisionThread();
             m_visionThread.setDaemon(true);
-            
+
 
             m_visionThread.start();
             m_visionThread.setPriority(Thread.NORM_PRIORITY-2);
@@ -116,12 +116,12 @@ public class RobotContainer {
         //m_drivingTab.add("Shooter Speed",m_shooter.m_shooterTargetSpeed)
             .withPosition(0,0)
             .withSize(2,4)
-            
+
             .withWidget(BuiltInWidgets.kDial)
             .withProperties(Map.of("Min",1500,"Max",5700));
 
-        // m_drivingTab.add( new HttpCamera("limelight", 
-        //     NetworkTableInstance.getDefault().getEntry("limelight_Stream").getString("http://10.87.8.11:5800/stream.mjpg"), 
+        // m_drivingTab.add( new HttpCamera("limelight",
+        //     NetworkTableInstance.getDefault().getEntry("limelight_Stream").getString("http://10.87.8.11:5800/stream.mjpg"),
         //     HttpCameraKind.kMJPGStreamer))
         //     .withPosition(2,0)
         //     .withSize(3,3);
@@ -130,7 +130,7 @@ public class RobotContainer {
         Shuffleboard.update();
         // Configure the button bindings
         m_buttonStick = m_driverControllerJoystickRight;
-        
+
         updateControlStyle();
 
         // Configure default commands
@@ -170,7 +170,7 @@ public class RobotContainer {
             } default: {};
         }
     }
-    
+
     private void demoButtonBindings() {
         m_manipulatorController.a().onTrue(
                 new InstantCommand(m_pickup::run, m_pickup).andThen(
@@ -207,8 +207,8 @@ public class RobotContainer {
                   m_shooter.stopFeeder();
                   m_transfer.stop();
                 }));
-  
-        
+
+
         m_manipulatorController.start().onTrue(new InstantCommand(m_shooter::faster, m_shooter));
         m_manipulatorController.back().onTrue(new InstantCommand(m_shooter::slower, m_shooter));
         m_manipulatorController.rightBumper().onTrue(new InstantCommand(m_shooter::autoSpeed, m_shooter));
@@ -229,7 +229,7 @@ public class RobotContainer {
   m_manipulatorController.leftTrigger().onFalse(
     new InstantCommand(m_pickup::pickupUp)
       );
-        
+
     }
 
 
@@ -243,32 +243,32 @@ public class RobotContainer {
             new InstantCommand(m_shooter::stopFeeder, m_shooter)));
 
             // Back ball out
-            m_manipulatorController.leftBumper().onTrue(
-                new InstantCommand(m_pickup::reverse, m_pickup).andThen(
-                new InstantCommand(m_transfer::backwards, m_transfer),
-                new InstantCommand(m_shooter::runFeederBackwards, m_shooter)));
-        
-            m_manipulatorController.rightTrigger().onTrue(
-                new InstantCommand(m_shooter::startFlywheel, m_shooter)
-                        .andThen(
-                                // Wait until the shooter is at speed before feeding the frisbees
-                                new WaitUntilCommand(m_shooter::atSetpoint),
-                                // Start running the feeder
-                                new InstantCommand(m_shooter::runFeeder, m_shooter),
-                                new InstantCommand(m_transfer::run, m_transfer),
-                                // Shoot for the specified time
-                                new WaitCommand(ShooterConstants.kShootTimeSeconds))
-                        // Add a timeout (will end the command if, for instance, the shooter never gets
-                        // up to
-                        // speed)
-                        .withTimeout(ShooterConstants.kShootTimeoutSeconds)
-                        // When the command ends, turn off the shooter and the feeder
-                        .andThen(
-                                () -> {
-                                    m_shooter.stopFlywheel();
-                                    m_shooter.stopFeeder();
-                                    m_transfer.stop();
-                                }));
+        m_manipulatorController.leftBumper().onTrue(
+            new InstantCommand(m_pickup::reverse, m_pickup).andThen(
+            new InstantCommand(m_transfer::backwards, m_transfer),
+            new InstantCommand(m_shooter::runFeederBackwards, m_shooter)));
+
+        m_manipulatorController.rightTrigger().onTrue(
+            new InstantCommand(m_shooter::startFlywheel, m_shooter)
+                    .andThen(
+                            // Wait until the shooter is at speed before feeding the frisbees
+                            new WaitUntilCommand(m_shooter::atSetpoint),
+                            // Start running the feeder
+                            new InstantCommand(m_shooter::runFeeder, m_shooter),
+                            new InstantCommand(m_transfer::run, m_transfer),
+                            // Shoot for the specified time
+                            new WaitCommand(ShooterConstants.kShootTimeSeconds))
+                    // Add a timeout (will end the command if, for instance, the shooter never gets
+                    // up to
+                    // speed)
+                    .withTimeout(ShooterConstants.kShootTimeoutSeconds)
+                    // When the command ends, turn off the shooter and the feeder
+                    .andThen(
+                            () -> {
+                                m_shooter.stopFlywheel();
+                                m_shooter.stopFeeder();
+                                m_transfer.stop();
+                            }));
 
         m_manipulatorController.povUp().onTrue(new InstantCommand(m_shooter::faster, m_shooter));
         m_manipulatorController.povDown().onTrue(new InstantCommand(m_shooter::slower, m_shooter));
@@ -305,13 +305,13 @@ public class RobotContainer {
               m_transfer.stop();
               m_shooter.stopFeeder();
             }));
-    
+
 
     public void updateDefaultCommands() {
         if (controlStyle.getSelected() == null) {
             return;
         }
-        
+
         switch(controlStyle.getSelected()) {
             case PARADE_CONTROLS: {
                 paradeDefaultCommands();
@@ -322,12 +322,12 @@ public class RobotContainer {
             }
         }
     }
-    
+
     public void paradeDefaultCommands() {
         m_robotDrive.setDefaultCommand(
             new RunCommand(
             () ->
-            m_robotDrive.arcadeDrive(
+            m_robotDrive.tankDrive(
             m_manipulatorController.getLeftY(), m_manipulatorController.getRightX(),
             false, false),
             m_robotDrive));
@@ -358,5 +358,5 @@ public class RobotContainer {
         Shuffleboard.update();
     }
 
-    
+
 }
