@@ -16,12 +16,14 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
+import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardComponent;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
@@ -85,9 +87,11 @@ public class RobotContainer {
     CommandJoystick m_driverControllerJoystickLeft = new CommandJoystick(OIConstants.kDriverControllerPort1);
     CommandJoystick m_driverControllerJoystickRight = new CommandJoystick(OIConstants.kDriverControllerPort2);
     BallDetector m_ballDetector;
-
-
-    /** The container for the robot. Contains subsystems, OI devices, and commands.
+    EventLoop demoEventLoop = CommandScheduler.getInstance().getActiveButtonLoop();
+    EventLoop paradeEventLoop = new EventLoop();
+    
+    
+    /** The container for the robot. Contains subsystems, OI devices, and commands. 
      * @param Map */
     public RobotContainer() {
         //Configure Shuffleboard
@@ -149,39 +153,71 @@ public class RobotContainer {
 
 
     void updateControlStyle() {
+        if (controlStyle.getSelected() == null) {
+            System.out.println("==control style is null, defaulting to demo mode");
+            CommandScheduler.getInstance().setActiveButtonLoop(demoEventLoop);
+            return;
+        }
+        switch(controlStyle.getSelected()) {
+            case PARADE_CONTROLS: {
+                System.out.println("==Setting active button loop to parade mode");
+
+                CommandScheduler.getInstance().setActiveButtonLoop(paradeEventLoop);
+                break;
+            } case DEMO_CONTROLS: {
+                System.out.println("==Setting active button loop to demo (normal) mode");
+                CommandScheduler.getInstance().setActiveButtonLoop(demoEventLoop);
+                break;
+            } default: {};
+        }        
         configureButtonBindings();
         updateDefaultCommands();
     }
 
     private void configureButtonBindings() {
         m_manipulatorController = new CommandXboxController(OIConstants.kManipulatorControllerPort);
-        if (controlStyle.getSelected() == null) {
-            return;
-        }
-
-
-        switch(controlStyle.getSelected()) {
-            case PARADE_CONTROLS: {
-                paradeButtonBindings();
-                break;
-            } case DEMO_CONTROLS: {
-                demoButtonBindings();
-                break;
-            } default: {};
-        }
+        configureParadeButtonBindings(paradeEventLoop);
+        configureDemoButtonBindings();
     }
 
-    private void demoButtonBindings() {
+
+    
+    private void configureDemoButtonBindings() {
         m_manipulatorController.a().onTrue(
                 new InstantCommand(m_pickup::run, m_pickup).andThen(
                 new InstantCommand(m_transfer::run, m_transfer),
                 new InstantCommand(m_shooter::runFeederBackwards, m_shooter)
         ));
-        m_manipulatorController.a().onFalse(
-            new InstantCommand(m_pickup::stop, m_pickup).andThen(
+
+        m_manipulatorController.b().onTrue(
+            new InstantCommand(m_pickup::pickupDown, m_pickup).andThen(
+            new InstantCommand(m_pickup::run, m_pickup),
+            new InstantCommand(m_transfer::run, m_transfer),
+            new InstantCommand(m_shooter::runFeederBackwards, m_shooter)
+            )
+        );
+
+        m_manipulatorController.b().onFalse(
+            new InstantCommand(m_pickup::pickupUp, m_pickup).andThen(
+            new InstantCommand(m_pickup::stop, m_pickup),
             new InstantCommand(m_transfer::stop, m_transfer),
-            new InstantCommand(m_shooter::stopFeeder, m_shooter)
-        ));
+            new InstantCommand(m_shooter::disable, m_shooter)
+            )
+        );
+
+        m_manipulatorController.leftBumper().onTrue(
+                new InstantCommand(m_pickup::reverse, m_pickup).andThen(
+                new InstantCommand(m_transfer::backwards, m_transfer),
+                new InstantCommand(m_shooter::runFeederBackwards, m_shooter)));
+
+        m_manipulatorController.leftBumper().onFalse(
+            new InstantCommand(m_pickup::stop, m_pickup).andThen(
+            new InstantCommand(m_transfer::stop, m_pickup),
+            new InstantCommand(m_shooter::stopFeeder, m_pickup)
+            )
+        );
+
+
         //new JoystickButton(m_manipulatorController, Button.kStart.value).onTrue(new SequentialCommandGroup(
         //new InstantCommand(m_shooter::runFeeder, m_shooter),
         //new WaitCommand(2),
@@ -219,36 +255,57 @@ public class RobotContainer {
         m_driverControllerJoystickRight.button(4).onTrue(
             new InstantCommand(m_transfer::backwards, m_transfer).andThen(
             new InstantCommand(m_pickup::reverse,m_pickup)));
-        m_manipulatorController.b().onFalse(
-            new InstantCommand(m_transfer::stop, m_transfer).andThen(
-            new InstantCommand(m_pickup::stopMotor,m_pickup)));
-        m_manipulatorController.leftBumper().onTrue(new InstantCommand(m_shooter::lowSpeed));
-  m_manipulatorController.leftTrigger().onTrue(
-        new InstantCommand(m_pickup::pickupDown)
-  );
-  m_manipulatorController.leftTrigger().onFalse(
-    new InstantCommand(m_pickup::pickupUp)
-      );
 
     }
 
 
 
 
-    private void paradeButtonBindings() {
+    private void configureParadeButtonBindings(EventLoop eventLoop) {
         // Stop everything
-        m_manipulatorController.start().onTrue(
+        m_manipulatorController.start(eventLoop).onTrue(
             new InstantCommand(m_pickup::stop, m_pickup).andThen(
             new InstantCommand(m_transfer::stop, m_transfer),
             new InstantCommand(m_shooter::stopFeeder, m_shooter)));
 
-            // Back ball out
-        m_manipulatorController.leftBumper().onTrue(
-            new InstantCommand(m_pickup::reverse, m_pickup).andThen(
-            new InstantCommand(m_transfer::backwards, m_transfer),
-            new InstantCommand(m_shooter::runFeederBackwards, m_shooter)));
+            m_manipulatorController.a(eventLoop).onTrue(
+            new InstantCommand(m_pickup::pickupDown, m_pickup).andThen(
+            new InstantCommand(m_pickup::run, m_pickup),
+            new InstantCommand(m_transfer::run, m_transfer),
+            new InstantCommand(m_shooter::runFeederBackwards, m_shooter)
+            )
+        );
 
-        m_manipulatorController.rightTrigger().onTrue(
+        m_manipulatorController.a(eventLoop).onFalse(
+            new InstantCommand(m_pickup::pickupUp, m_pickup).andThen(
+            new InstantCommand(m_pickup::stop, m_pickup),
+            new InstantCommand(m_transfer::stop, m_transfer),
+            new InstantCommand(m_shooter::disable, m_shooter)
+            )
+        );
+
+        m_manipulatorController.y(eventLoop).onTrue(
+            new InstantCommand(m_pickup::pickupUp, m_pickup).andThen(
+            new InstantCommand(m_pickup::stop, m_pickup),
+            new InstantCommand(m_transfer::stop, m_transfer),
+            new InstantCommand(m_shooter::disable, m_shooter)
+            )
+        );
+
+        // Back ball out
+        m_manipulatorController.b(eventLoop).onTrue(
+                new InstantCommand(m_pickup::reverse, m_pickup).andThen(
+                new InstantCommand(m_transfer::backwards, m_transfer),
+                new InstantCommand(m_shooter::runFeederBackwards, m_shooter)));
+
+        m_manipulatorController.b(eventLoop).onFalse(
+            new InstantCommand(m_pickup::stop, m_pickup).andThen(
+            new InstantCommand(m_transfer::stop, m_pickup),
+            new InstantCommand(m_shooter::stopFeeder, m_pickup)
+            )
+        );
+
+        m_manipulatorController.rightTrigger(0.5, eventLoop).onTrue(
             new InstantCommand(m_shooter::startFlywheel, m_shooter)
                     .andThen(
                             // Wait until the shooter is at speed before feeding the frisbees
@@ -270,12 +327,12 @@ public class RobotContainer {
                                 m_transfer.stop();
                             }));
 
-        m_manipulatorController.povUp().onTrue(new InstantCommand(m_shooter::faster, m_shooter));
-        m_manipulatorController.povDown().onTrue(new InstantCommand(m_shooter::slower, m_shooter));
+        m_manipulatorController.pov(0, 0, eventLoop).onTrue(new InstantCommand(m_shooter::faster, m_shooter));
+        m_manipulatorController.pov(0, 180, eventLoop).onTrue(new InstantCommand(m_shooter::slower, m_shooter));
 
-        m_manipulatorController.leftTrigger().onTrue(
+        m_manipulatorController.leftTrigger(eventLoop, 0.5).onTrue(
             new InstantCommand(m_pickup::pickupDown));
-        m_manipulatorController.leftTrigger().onFalse(
+        m_manipulatorController.leftTrigger(eventLoop, 0.5).onFalse(
             new InstantCommand(m_pickup::pickupUp));
 
     }
@@ -324,6 +381,7 @@ public class RobotContainer {
     }
 
     public void paradeDefaultCommands() {
+        System.out.println("==Setting controls to parade mode");
         m_robotDrive.setDefaultCommand(
             new RunCommand(
             () ->
@@ -335,12 +393,13 @@ public class RobotContainer {
     }
 
     public void demoDefaultCommands() {
+        System.out.println("==Setting controls to demo mode");
         m_robotDrive.setDefaultCommand(
             new RunCommand(
             () ->
             m_robotDrive.tankDrive(
-            m_driverControllerJoystickLeft.getY(), m_driverControllerJoystickRight.getY(),
-            m_driverControllerJoystickRight.trigger().getAsBoolean(), false),
+            m_driverControllerJoystickLeft.getHID().getY(), m_driverControllerJoystickRight.getHID().getY(),
+            m_driverControllerJoystickRight.getHID().getTrigger(), false),
             m_robotDrive));
         m_hook.setDefaultCommand(new AutoRetractHanger(m_hook));
     }

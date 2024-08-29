@@ -66,6 +66,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.updateValues();
 
     if (m_robotContainer.controlStyle.getSelected() != previousControlStyle) {
+      System.out.println("==Detected controlstyle interface change.  Updating control style.");
       m_robotContainer.updateControlStyle();
       previousControlStyle = m_robotContainer.controlStyle.getSelected();
     }
